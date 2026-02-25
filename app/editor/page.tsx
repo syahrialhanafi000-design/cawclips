@@ -837,18 +837,42 @@ export default function VideoEditorPage() {
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 px-0.5">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-semibold text-white/80">Timeline Range</span>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] text-slate-500 font-mono">Duration: {duration > 0 ? toHMS(duration) : '--:--:--'}</span>
-                {activeUrl && (
-                  <Tooltip content="Batas pembuatan klip per video" position="right">
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded border transition-all duration-300 ${currentClipCount >= globalSettings.maxClipsPerVideo ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 font-bold shadow-[0_0_8px_rgba(244,63,94,0.1)]' : 'bg-white/5 border-white/10 text-slate-400'}`}>
-                      Clips: {currentClipCount} / {globalSettings.maxClipsPerVideo}
-                    </span>
-                  </Tooltip>
-                )}
+            <div className='flex items-center gap-5'>
+              {playerReady && duration > 0 && !isPreviewing && (
+                <button
+                  onClick={handleTogglePlay}
+                  className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm shrink-0 transition-colors border ${isPlaying ? 'border-teal-500/40 bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'}`}>
+                  {isPlaying ? (
+                    <>
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16" />
+                        <rect x="14" y="4" width="4" height="16" />
+                      </svg>
+                      <span>Jeda</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                      </svg>
+                      <span>Putar</span>
+                    </>
+                  )}
+                </button>
+              )}
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-semibold text-white/80">Timeline Range</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] text-slate-500 font-mono">Duration: {duration > 0 ? toHMS(duration) : '--:--:--'}</span>
+                  {activeUrl && (
+                    <Tooltip content="Batas pembuatan klip per video" position="right">
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded border transition-all duration-300 ${currentClipCount >= globalSettings.maxClipsPerVideo ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 font-bold shadow-[0_0_8px_rgba(244,63,94,0.1)]' : 'bg-white/5 border-white/10 text-slate-400'}`}>
+                        Clips: {currentClipCount} / {globalSettings.maxClipsPerVideo}
+                      </span>
+                    </Tooltip>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1089,29 +1113,6 @@ export default function VideoEditorPage() {
                 )}
               </button>
             </Tooltip>
-          )}
-
-          {playerReady && duration > 0 && !isPreviewing && (
-            <button
-              onClick={handleTogglePlay}
-              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm shrink-0 transition-colors border ${isPlaying ? 'border-teal-500/40 bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'}`}>
-              {isPlaying ? (
-                <>
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="6" y="4" width="4" height="16" />
-                    <rect x="14" y="4" width="4" height="16" />
-                  </svg>
-                  <span>Jeda</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
-                  <span>Putar</span>
-                </>
-              )}
-            </button>
           )}
 
           {jobStatus === 'finished' ? (
