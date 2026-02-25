@@ -602,31 +602,33 @@ export default function VideoEditorPage() {
     if (!downloadUrl || isDownloading) return;
 
     setIsDownloading(true);
-    console.log('[DEBUG] Starting download fetch for:', downloadUrl);
+    console.log('[DEBUG] Pemicu download aktif:', downloadUrl);
 
     try {
-      const response = await fetch(downloadUrl);
-      if (!response.ok) throw new Error('Download failed');
+      // 1. Simulasi loading singkat untuk UI (memberikan feedback visual)
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-
+      // 2. Pemicu download langsung lewat browser (metode paling handal)
       const a = document.createElement('a');
-      a.href = blobUrl;
+      const downloadUrlWithParam = downloadUrl.includes('?') ? `${downloadUrl}&download=1` : `${downloadUrl}?download=1`;
+      a.href = downloadUrlWithParam;
       const fileName = downloadUrl.split('/').pop()?.split('?')[0] || 'CAW_Media';
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      window.URL.revokeObjectURL(blobUrl);
 
-      console.log('[DEBUG] Download successful, resetting editor');
-      handleReset();
+      console.log('[DEBUG] Download dipicu, mereset editor...');
+
+      // 3. Reset editor otomatis setelah sedikit jeda agar tidak mengganggu trigger browser
+      setTimeout(() => {
+        handleReset();
+        setIsDownloading(false);
+      }, 1000);
     } catch (err) {
-      console.error('[DEBUG] Download error:', err);
+      console.error('[DEBUG] Gagal memicu download:', err);
       window.open(downloadUrl, '_blank');
       handleReset();
-    } finally {
       setIsDownloading(false);
     }
   }, [downloadUrl, isDownloading, handleReset]);
