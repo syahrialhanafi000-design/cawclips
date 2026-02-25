@@ -755,8 +755,22 @@ export default function VideoEditorPage() {
             <span className="font-semibold text-sm tracking-tight text-white/90">CAW Clip</span>
           </div>
 
+          <Tooltip content="Buka panduan fitur" position="bottom">
+            <button
+              onClick={() => setShowWelcome(true)}
+              className="h-8 px-3 rounded-full bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 text-[9px] font-black border border-teal-500/20 transition-all flex items-center gap-1.5 active:scale-95 tracking-widest uppercase">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <span className="hidden xs:inline">Bantuan</span>
+            </button>
+          </Tooltip>
+
           <div className="flex-1 min-w-[200px] order-last sm:order-0 w-full sm:w-auto">
             <input
+              id="tour-url-input"
               type="url"
               value={inputUrl}
               onChange={(e) => setInputUrl(e.target.value)}
@@ -768,6 +782,7 @@ export default function VideoEditorPage() {
 
           <Tooltip content="Memproses video" position="bottom" className="shrink-0">
             <button
+              id="tour-load-button"
               onClick={handleLoad}
               disabled={!inputUrl.trim()}
               className="h-10 px-4 sm:px-5 rounded-lg text-xs sm:text-sm font-semibold bg-teal-600 hover:bg-teal-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-lg shadow-teal-900/40">
@@ -837,9 +852,10 @@ export default function VideoEditorPage() {
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 px-0.5">
-            <div className='flex items-center gap-5'>
-              {playerReady && duration > 0 && !isPreviewing && (
+            <div className="flex items-center gap-5">
+              {((playerReady && duration > 0 && !isPreviewing) || showWelcome) && (
                 <button
+                  id="tour-play-pause"
                   onClick={handleTogglePlay}
                   className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm shrink-0 transition-colors border ${isPlaying ? 'border-teal-500/40 bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'}`}>
                   {isPlaying ? (
@@ -876,7 +892,7 @@ export default function VideoEditorPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 w-full sm:w-auto overflow-hidden">
+            <div id="tour-zoom-slider" className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 w-full sm:w-auto overflow-hidden">
               <Tooltip content="Atur tingkat detail tampilan timeline" position="left" className="shrink-0">
                 <div className="flex items-center gap-2">
                   <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -891,29 +907,31 @@ export default function VideoEditorPage() {
               <span className="text-[10px] font-mono text-teal-400 w-8 text-right shrink-0">{zoom}x</span>
             </div>
           </div>
-          <Timeline
-            duration={duration}
-            start={startTime}
-            end={endTime}
-            currentTime={currentTime}
-            zoom={zoom}
-            onStartChange={setStartTime}
-            onEndChange={setEndTime}
-            onSeek={(time) => {
-              const player = playerInstance || playerRef.current;
-              if (player) {
-                // Determine if it's the direct instance or wrapped by dynamic
-                const target = player.seekTo ? player : player.getInternalPlayer?.() || player;
+          <div id="tour-timeline">
+            <Timeline
+              duration={duration}
+              start={startTime}
+              end={endTime}
+              currentTime={currentTime}
+              zoom={zoom}
+              onStartChange={setStartTime}
+              onEndChange={setEndTime}
+              onSeek={(time) => {
+                const player = playerInstance || playerRef.current;
+                if (player) {
+                  // Determine if it's the direct instance or wrapped by dynamic
+                  const target = player.seekTo ? player : player.getInternalPlayer?.() || player;
 
-                if (typeof target.seekTo === 'function') {
-                  target.seekTo(time, 'seconds');
-                } else if (target.currentTime !== undefined) {
-                  target.currentTime = time;
+                  if (typeof target.seekTo === 'function') {
+                    target.seekTo(time, 'seconds');
+                  } else if (target.currentTime !== undefined) {
+                    target.currentTime = time;
+                  }
+                  setCurrentTime(time);
                 }
-                setCurrentTime(time);
-              }
-            }}
-          />
+              }}
+            />
+          </div>
           <div className="text-center px-4">
             <span className="text-[9px] sm:text-[10px] text-slate-600 block leading-relaxed">Geser tuas untuk tentukan klip • Geser kotak pilihan untuk memindah rentang</span>
           </div>
@@ -974,7 +992,7 @@ export default function VideoEditorPage() {
               {/* Manual Boundary Controls */}
               <div className="flex flex-col gap-3">
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tentukan Batas</span>
-                <div className="grid grid-cols-2 gap-2">
+                <div id="tour-point-controls" className="grid grid-cols-2 gap-2">
                   <Tooltip content="Set waktu mulai pada posisi saat ini">
                     <button
                       onClick={() => setStartTime(currentTime)}
@@ -997,7 +1015,7 @@ export default function VideoEditorPage() {
               {/* Quick Preset Durations */}
               <div className="flex flex-col gap-3">
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Durasi Instan</span>
-                <div className="grid grid-cols-2 xsm:grid-cols-4 gap-2">
+                <div id="tour-preset-durations" className="grid grid-cols-2 xsm:grid-cols-4 gap-2">
                   {[5, 10, 30, 60].map((s) => (
                     <Tooltip key={s} content={`Tambah ${s} detik dari start`} className="w-full">
                       <button
@@ -1048,9 +1066,10 @@ export default function VideoEditorPage() {
           {jobStatus === 'error' && errorMsg && <p className="text-xs text-red-400 max-w-xs text-center sm:text-right">{errorMsg}</p>}
 
           <div className="flex flex-col gap-4 w-full md:flex-1">
-            <div className="flex flex-wrap items-center gap-2 p-1 bg-white/5 rounded-xl border border-white/10 w-full sm:w-fit justify-center sm:justify-start">
+            <div id="tour-mode-selection" className="flex flex-wrap items-center gap-2 p-1 bg-white/5 rounded-xl border border-white/10 w-full sm:w-fit justify-center sm:justify-start">
               <Tooltip content="Ekspor sebagai klip video MP4" position="bottom" className="flex-1 sm:flex-none">
                 <button
+                  id="tour-mode-video"
                   onClick={() => setMode('video')}
                   className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'video' ? 'bg-teal-600 text-white shadow-lg shadow-teal-900/40' : 'text-slate-400 hover:text-white'}`}>
                   Klip (MP4)
@@ -1058,6 +1077,7 @@ export default function VideoEditorPage() {
               </Tooltip>
               <Tooltip content="Ambil foto HD dari frame saat ini" position="bottom" className="flex-1 sm:flex-none">
                 <button
+                  id="tour-mode-photo"
                   onClick={() => setMode('super_photo')}
                   className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'super_photo' ? 'bg-teal-600 text-white shadow-lg shadow-teal-900/40' : 'text-slate-400 hover:text-white'}`}>
                   Foto (PNG)
@@ -1065,6 +1085,7 @@ export default function VideoEditorPage() {
               </Tooltip>
               <Tooltip content="Ekspor banyak frame dalam file ZIP" position="bottom" className="flex-1 sm:flex-none">
                 <button
+                  id="tour-mode-burst"
                   onClick={() => setMode('burst')}
                   className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'burst' ? 'bg-teal-600 text-white shadow-lg shadow-teal-900/40' : 'text-slate-400 hover:text-white'}`}>
                   Burst (ZIP)
@@ -1090,9 +1111,10 @@ export default function VideoEditorPage() {
             )}
           </div>
 
-          {playerReady && duration > 0 && (
+          {((playerReady && duration > 0) || showWelcome) && (
             <Tooltip content="Lihat pratinjau rentang waktu yang dipilih" position="top" className="w-full sm:w-auto">
               <button
+                id="tour-preview-button"
                 onClick={handlePreview}
                 className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm shrink-0 transition-colors border ${isPreviewing ? 'border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'}`}>
                 {isPreviewing ? (
@@ -1141,6 +1163,7 @@ export default function VideoEditorPage() {
           ) : (
             <Tooltip content="Mulai proses pengolahan media" position="top" className="w-full sm:w-auto">
               <button
+                id="tour-create-button"
                 onClick={handleCreateClip}
                 disabled={
                   !playerReady ||
@@ -1274,7 +1297,7 @@ export default function VideoEditorPage() {
             <div className="flex items-center gap-3 px-2">
               <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
                 <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <div className="flex flex-col">
