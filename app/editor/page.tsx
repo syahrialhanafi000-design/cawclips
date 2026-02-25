@@ -281,6 +281,7 @@ export default function VideoEditorPage() {
   const [mode, setMode] = useState<OutputMode>('video');
   const [burstInterval, setBurstInterval] = useState(1);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [globalSettings, setGlobalSettings] = useState({ minClipDuration: 5, maxClipDuration: 600, maxClipsPerVideo: 5 });
   const [currentClipCount, setCurrentClipCount] = useState(0);
@@ -447,6 +448,14 @@ export default function VideoEditorPage() {
     setCurrentStep(0);
   };
 
+  const handleReset = useCallback(() => {
+    setJobStatus('idle');
+    setDownloadUrl('');
+    setErrorMsg('');
+    setStatusMessage('');
+    setCurrentStep(0);
+  }, []);
+
   const handleDuration = (d: number) => {
     setDuration(d);
     setStartTime(0);
@@ -590,41 +599,37 @@ export default function VideoEditorPage() {
   };
 
   const handleDownload = useCallback(async () => {
-    if (!downloadUrl) return;
+    if (!downloadUrl || isDownloading) return;
 
-    const downloadUrlWithParam = downloadUrl.includes('?') ? `${downloadUrl}&download=1` : `${downloadUrl}?download=1`;
+    setIsDownloading(true);
+    console.log('[DEBUG] Starting download fetch for:', downloadUrl);
 
     try {
-      // Force direct download by fetching the blob for images and small files
-      const isImage = downloadUrl.toLowerCase().endsWith('.png');
-      if (isImage) {
-        const res = await fetch(downloadUrl);
-        const blob = await res.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        const fileName = downloadUrl.split('/').pop()?.split('?')[0] || 'CAW_Capture.png';
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-        return;
-      }
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error('Download failed');
 
-      // Default behavior for larger files or videos
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
       const a = document.createElement('a');
-      a.href = downloadUrlWithParam;
-      const fileName = downloadUrl.split('/').pop()?.split('?')[0] || 'CAW_Clip.mp4';
+      a.href = blobUrl;
+      const fileName = downloadUrl.split('/').pop()?.split('?')[0] || 'CAW_Media';
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+
+      console.log('[DEBUG] Download successful, resetting editor');
+      handleReset();
     } catch (err) {
-      console.error('Direct download failed, falling back to window.open', err);
-      window.open(downloadUrlWithParam, '_blank');
+      console.error('[DEBUG] Download error:', err);
+      window.open(downloadUrl, '_blank');
+      handleReset();
+    } finally {
+      setIsDownloading(false);
     }
-  }, [downloadUrl]);
+  }, [downloadUrl, isDownloading, handleReset]);
 
   const stopPreview = useCallback(() => {
     previewStopRef.current?.();
@@ -1109,13 +1114,25 @@ export default function VideoEditorPage() {
 
           {jobStatus === 'finished' ? (
             <Tooltip content="Simpan hasil ke perangkat Anda" position="top">
-              <button onClick={handleDownload} className="flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm shrink-0 bg-emerald-600 hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/40">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Unduh File
+              <button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm shrink-0 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-emerald-900/40">
+                {isDownloading ? (
+                  <>
+                    <Spinner />
+                    <span>Mendownload…</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Unduh File
+                  </>
+                )}
               </button>
             </Tooltip>
           ) : (
@@ -1296,13 +1313,23 @@ export default function VideoEditorPage() {
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
               <button
                 onClick={handleDownload}
-                className="w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-4 rounded-2xl font-bold text-base bg-emerald-600 hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/40 hover:scale-[1.02] active:scale-[0.98]">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Unduh Klip
+                disabled={isDownloading}
+                className="w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-4 rounded-2xl font-bold text-base bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-emerald-900/40 hover:scale-[1.02] active:scale-[0.98]">
+                {isDownloading ? (
+                  <>
+                    <Spinner className="w-5 h-5" />
+                    <span>Mendownload…</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Unduh Klip
+                  </>
+                )}
               </button>
               <button
                 onClick={handleCancel}
