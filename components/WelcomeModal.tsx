@@ -2,7 +2,7 @@
 
 import { useState, useLayoutEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Play, Scissors, Download, Link2, Pause, Search, MapPin, Zap } from 'lucide-react';
+import { ArrowRight, Play, Scissors, Download, Link2, Pause, Search, MapPin, Zap, Clock } from 'lucide-react';
 
 interface WelcomeModalProps {
   onClose: () => void;
@@ -81,6 +81,12 @@ export default function WelcomeModal({ onClose }: WelcomeModalProps) {
         title: 'Burst Frames (ZIP)',
         content: 'Mengekstrak rangkaian gambar dalam interval cepat (misal: tiap 0.2s) dan mengemasnya dalam ZIP. Ideal untuk analisis detail gerakan.',
         icon: <Zap className="w-8 h-8 text-teal-400" />,
+      },
+      {
+        targetId: 'tour-burst-interval',
+        title: 'Interval Burst',
+        content: 'Atur seberapa sering gambar diambil dalam mode Burst. Semakin kecil angkanya (misal: 0.2s), semakin banyak gambar yang akan dihasilkan.',
+        icon: <Clock className="w-8 h-8 text-amber-400" />,
       },
       {
         targetId: 'tour-preview-button',

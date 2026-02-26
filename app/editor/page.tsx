@@ -1093,8 +1093,8 @@ export default function VideoEditorPage() {
               </Tooltip>
             </div>
 
-            {mode === 'burst' && (
-              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+            {(mode === 'burst' || showWelcome) && (
+              <div id="tour-burst-interval" className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Interval Frame (detik)</label>
                 <input
                   type="number"

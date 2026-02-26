@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Layers, Clock, ArrowRight, ShieldAlert, Info, Play, Zap } from 'lucide-react';
-import WelcomeModal from '@/components/WelcomeModal';
+import BetaPeringatanModal from '@/components/BetaPeringatanModal';
 import Tooltip from '@/components/Tooltip';
 
 const FeatureCard = ({ icon: Icon, title, description, delay, tooltip }: { icon: React.ElementType; title: string; description: string; delay: number; tooltip: string }) => (
@@ -306,7 +306,7 @@ export default function LandingPage() {
         </button>
       </footer>
 
-      <AnimatePresence>{showDisclaimer && <WelcomeModal onClose={() => setShowDisclaimer(false)} />}</AnimatePresence>
+      <AnimatePresence>{showDisclaimer && <BetaPeringatanModal onClose={() => setShowDisclaimer(false)} />}</AnimatePresence>
     </div>
   );
 }
