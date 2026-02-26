@@ -6,30 +6,62 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Layers, Clock, ArrowRight, ShieldAlert, Info, Play, Zap } from 'lucide-react';
 import BetaPeringatanModal from '@/components/BetaPeringatanModal';
 import Tooltip from '@/components/Tooltip';
+import Background3D from '@/components/Background3D';
+import Anime3DContainer from '@/components/Anime3DContainer';
+import { animate as anime, stagger } from 'animejs';
+import MagneticButton from '@/components/MagneticButton';
+import dynamic from 'next/dynamic';
+
+const MouseFollower = dynamic(() => import('@/components/MouseFollower'), { ssr: false });
+import TextScramble from '@/components/TextScramble';
+import ExtremeTilt from '@/components/ExtremeTilt';
+
+import ScrollVelocityEffect from '@/components/ScrollVelocityEffect';
+import ParallaxSection from '@/components/ParallaxSection';
 
 const FeatureCard = ({ icon: Icon, title, description, delay, tooltip }: { icon: React.ElementType; title: string; description: string; delay: number; tooltip: string }) => (
   <Tooltip content={tooltip} position="bottom">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay, duration: 0.5 }}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
-      className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-teal-500/50 hover:bg-white/10 transition-all group">
-      <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 mb-6 group-hover:scale-110 transition-transform">
-        <Icon className="w-7 h-7 text-teal-400" />
-      </div>
-      <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
-      <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
-    </motion.div>
+    <ExtremeTilt intensity={20} className="h-full">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay, duration: 0.5 }}
+        className="h-full p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-teal-500/50 hover:bg-white/10 transition-all group relative"
+        style={{ transformStyle: 'preserve-3d' }}>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 blur-[40px] rounded-full -mr-16 -mt-16 group-hover:bg-teal-500/10 transition-colors" />
+        <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 mb-6 group-hover:scale-110 transition-transform relative z-10" style={{ transform: 'translateZ(30px)' }}>
+          <Icon className="w-7 h-7 text-teal-400" />
+        </div>
+        <h3 className="text-xl font-bold text-white mb-3 relative z-10" style={{ transform: 'translateZ(20px)' }}>
+          {title}
+        </h3>
+        <p className="text-slate-400 text-sm leading-relaxed relative z-10" style={{ transform: 'translateZ(10px)' }}>
+          {description}
+        </p>
+      </motion.div>
+    </ExtremeTilt>
   </Tooltip>
 );
 
 export default function LandingPage() {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
 
+  React.useEffect(() => {
+    // Staggered entry for feature cards
+    anime('.feature-card', {
+      opacity: [0, 1],
+      translateY: [20, 0],
+      delay: stagger(100),
+      duration: 800,
+      easing: 'easeOutQuad',
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#07111f] text-white overflow-x-hidden selection:bg-teal-500/30">
+      <MouseFollower />
+      <Background3D />
       {/* Abstract Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-500/10 blur-[120px] rounded-full animate-pulse" />
@@ -39,11 +71,37 @@ export default function LandingPage() {
       {/* Top Background Pattern */}
       <div className="absolute top-0 left-0 right-0 h-[600px] bg-linear-to-b from-teal-500/5 to-transparent pointer-events-none" />
 
+      {/* Floating Parallax Elements */}
+      <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
+        <motion.div
+          animate={{
+            y: [0, -20, 0],
+            rotate: [0, 10, 0],
+            z: [0, 50, 0],
+          }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-[20%] left-[10%] w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 backdrop-blur-sm flex items-center justify-center"
+          style={{ transformStyle: 'preserve-3d' }}>
+          <Camera className="w-6 h-6 text-teal-400" />
+        </motion.div>
+        <motion.div
+          animate={{
+            y: [0, 20, 0],
+            rotate: [0, -10, 0],
+            z: [0, 80, 0],
+          }}
+          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-[60%] right-[15%] w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm flex items-center justify-center"
+          style={{ transformStyle: 'preserve-3d' }}>
+          <Zap className="w-8 h-8 text-blue-400" />
+        </motion.div>
+      </div>
+
       {/* Membership Banner / Top Section */}
-      <section className="relative z-50 px-6 py-12 border-b border-white/5 bg-teal-500/5 overflow-hidden">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <section className="relative z-50 px-4 md:px-6 py-8 md:py-12 border-b border-white/5 bg-teal-500/5 overflow-hidden">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-            <div className="w-12 h-12 rounded-2xl bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/20 flex items-center justify-center border border-teal-500/30 shrink-0">
               <Zap className="w-6 h-6 text-teal-400" />
             </div>
             <div>
@@ -53,23 +111,23 @@ export default function LandingPage() {
               <p className="text-slate-400 text-sm font-medium italic">Gabung jadi member sekarang untuk apresiasi AnangWaw!</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Tooltip content="Dukung Kreator di Channel Gaming" position="bottom">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+            <Tooltip content="Dukung Kreator di Channel Gaming" position="bottom" className="w-full sm:w-auto">
               <a
                 href="https://www.youtube.com/@ananggaming/membership"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group px-6 py-3 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.05] transition-all shadow-xl active:scale-95 flex items-center gap-2 whitespace-nowrap">
+                className="group w-full sm:w-auto px-6 py-3 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.05] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap">
                 Join @ananggaming
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </a>
             </Tooltip>
-            <Tooltip content="Dukung Kreator di Channel Utama" position="bottom">
+            <Tooltip content="Dukung Kreator di Channel Utama" position="bottom" className="w-full sm:w-auto">
               <a
                 href="https://www.youtube.com/@anangwaw/membership"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group px-6 py-3 rounded-xl bg-teal-600 text-white font-bold text-sm hover:scale-[1.05] transition-all shadow-xl active:scale-95 flex items-center gap-2 whitespace-nowrap">
+                className="group w-full sm:w-auto px-6 py-3 rounded-xl bg-teal-600 text-white font-bold text-sm hover:scale-[1.05] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap">
                 Join @anangwaw
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </a>
@@ -115,96 +173,124 @@ export default function LandingPage() {
           Sekarang dalam Tahap Beta
         </motion.div>
 
-        <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight leading-none sm:leading-[0.9] mb-8">
-          TANGKAP SETIAP <br className="hidden sm:block" />
-          <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-400 to-emerald-400 italic">MOMEN</span> DENGAN HD
-        </motion.h1>
+        <ScrollVelocityEffect className="w-full flex flex-col items-center">
+          <Anime3DContainer intensity={15} className="w-full flex flex-col items-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-3xl sm:text-6xl md:text-8xl font-black tracking-tight leading-none sm:leading-[0.9] mb-8 text-center w-full max-w-4xl px-4">
+              <TextScramble text="TANGKAP SETIAP" /> <br className="hidden sm:block" />
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-400 to-emerald-400 italic">
+                <TextScramble text="MOMEN" />
+              </span>{' '}
+              <TextScramble text="DENGAN HD" />
+            </motion.h1>
 
-        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-xl text-slate-400 text-lg md:text-xl font-medium mb-12">
-          Tangkap foto berkualitas tinggi, rangkaian frame, dan klip video dari livestream favorit anda dengan presisi sempurna.
-        </motion.p>
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-xl text-slate-400 text-base md:text-xl font-medium mb-12 mx-auto px-6 md:px-0 text-center w-full">
+              Tangkap foto berkualitas tinggi, rangkaian frame, dan klip video dari livestream favorit anda dengan presisi sempurna.
+            </motion.p>
+          </Anime3DContainer>
+        </ScrollVelocityEffect>
 
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-4 sm:px-0">
-          <Tooltip content="Mulai membuat klip video sekarang" position="bottom" className="w-full sm:w-auto">
-            <button
-              onClick={async () => {
-                try {
-                  const res = await fetch('/api/auth/session');
-                  const data = await res.json();
-                  window.location.href = data.authenticated ? '/editor' : '/login';
-                } catch {
-                  window.location.href = '/login';
-                }
-              }}
-              className="group px-6 sm:px-8 py-4 sm:py-5 rounded-2xl bg-teal-500 hover:bg-teal-400 text-white font-black text-base sm:text-lg transition-all shadow-xl shadow-teal-500/25 flex items-center justify-center gap-2 active:scale-95 w-full sm:w-auto">
-              TANGKAP MOMEN SEKARANG
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </Tooltip>
-          <Tooltip content="Pelajari fitur kami" position="bottom" className="w-full sm:w-auto">
-            <a
-              href="#features"
-              className="px-6 sm:px-8 py-4 sm:py-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold text-base sm:text-lg transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-              <Play className="w-5 h-5 text-teal-400 fill-teal-400" />
-              Pelajari Fitur
-            </a>
-          </Tooltip>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row items-center justify-center gap-6 w-full sm:w-auto px-4 sm:px-0">
+          <MagneticButton distance={0.3} className="w-full sm:w-auto">
+            <Tooltip content="Mulai membuat klip video sekarang" position="bottom" className="w-full sm:w-auto">
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/auth/session');
+                    const data = await res.json();
+                    window.location.href = data.authenticated ? '/editor' : '/login';
+                  } catch {
+                    window.location.href = '/login';
+                  }
+                }}
+                className="group px-6 sm:px-10 py-5 sm:py-6 rounded-2xl bg-teal-500 hover:bg-teal-400 text-white font-black text-lg sm:text-xl transition-all shadow-2xl shadow-teal-500/40 flex items-center justify-center gap-3 active:scale-95 w-full sm:w-auto">
+                TANGKAP MOMEN SEKARANG
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </Tooltip>
+          </MagneticButton>
+          <MagneticButton distance={0.2} className="w-full sm:w-auto">
+            <Tooltip content="Pelajari fitur kami" position="bottom" className="w-full sm:w-auto">
+              <a
+                href="#features"
+                className="px-6 sm:px-10 py-5 sm:py-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold text-lg sm:text-xl transition-all flex items-center justify-center gap-3 w-full sm:w-auto backdrop-blur-md">
+                <Play className="w-6 h-6 text-teal-400 fill-teal-400" />
+                Pelajari Fitur
+              </a>
+            </Tooltip>
+          </MagneticButton>
         </motion.div>
 
         {/* Floating Preview Mockup */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="mt-24 w-full max-w-5xl aspect-video rounded-3xl bg-[#0a1628] border border-white/10 shadow-2xl overflow-hidden relative group">
-          <div className="absolute inset-0 bg-linear-to-t from-[#07111f] via-transparent to-transparent z-10" />
-          <div className="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-60 transition-opacity">
-            <Camera className="w-32 h-32 text-teal-500/20 animate-pulse" />
-          </div>
-          {/* Mock UI Overlay */}
-          <div className="absolute bottom-12 left-12 z-20 hidden md:block text-left">
-            <div className="flex gap-4">
-              <div className="w-32 h-2 bg-teal-500 rounded-full" />
-              <div className="w-24 h-2 bg-white/20 rounded-full" />
+        <Anime3DContainer intensity={5} className="mt-24 w-full max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="w-full aspect-video rounded-3xl bg-[#0a1628] border border-white/10 shadow-2xl overflow-hidden relative group">
+            <div className="absolute inset-0 bg-linear-to-t from-[#07111f] via-transparent to-transparent z-10" />
+            <div className="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-60 transition-opacity">
+              <Camera className="w-32 h-32 text-teal-500/20 animate-pulse" />
             </div>
-            <div className="mt-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center">
-                <Clock className="w-6 h-6 text-white" />
+            {/* Mock UI Overlay */}
+            <div className="absolute bottom-12 left-12 z-20 hidden md:block text-left">
+              <div className="flex gap-4">
+                <div className="w-32 h-2 bg-teal-500 rounded-full" />
+                <div className="w-24 h-2 bg-white/20 rounded-full" />
               </div>
-              <div className="text-left">
-                <div className="text-xs uppercase tracking-widest text-slate-400 font-bold">Pemilih Momen</div>
-                <div className="text-xl font-black text-white">01:23:45.67</div>
+              <div className="mt-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs uppercase tracking-widest text-slate-400 font-bold">Pemilih Momen</div>
+                  <div className="text-xl font-black text-white">01:23:45.67</div>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </Anime3DContainer>
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="px-6 py-32 max-w-7xl mx-auto">
-        <div className="flex flex-col items-center text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-black mb-4">DIRANCANG UNTUK KUALITAS</h2>
-          <p className="text-slate-500 font-medium">Bawa momen livestreaming ke level profesional.</p>
-        </div>
+      <ParallaxSection>
+        <section id="features" className="px-4 md:px-6 py-20 md:py-32 max-w-7xl mx-auto relative z-20">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-teal-500/5 blur-[150px] pointer-events-none rounded-full" />
+          <div className="flex flex-col items-center text-center mb-16 md:mb-20 relative z-20">
+            <h2 className="text-2xl md:text-5xl font-black mb-4 tracking-tighter">
+              <TextScramble text="DIRANCANG UNTUK KUALITAS" duration={1200} />
+            </h2>
+            <p className="text-slate-500 font-medium text-sm md:text-base">Bawa momen livestreaming ke level profesional.</p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <FeatureCard
-            icon={Layers}
-            title="Super HD PNG"
-            description="Lakukan capture frame tunggal dengan resolusi lossless. Bukan sekedar screenshot, tapi frame asli berkualitas tinggi."
-            delay={0.1}
-            tooltip="Kualitas gambar terbaik tanpa kompresi"
-          />
-          <FeatureCard icon={Zap} title="Burst Mode" description="Tangkap urutan moment cepat dalam rangkaian frame PNG yang tajam. Sempurna untuk aksi yang sangat cepat." delay={0.2} tooltip="Banyak frame dalam satu kali klik" />
-          <FeatureCard
-            icon={Clock}
-            title="Moment Picker"
-            description="Timeline editor yang presisi dengan seek slider cepat dan boundary setter sekali klik untuk kemudahan clipping."
-            delay={0.3}
-            tooltip="Pilih durasi klip dengan presisi milidetik"
-          />
-        </div>
-      </section>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="feature-card opacity-0">
+              <FeatureCard
+                icon={Layers}
+                title="Super HD PNG"
+                description="Lakukan capture frame tunggal dengan resolusi lossless. Bukan sekedar screenshot, tapi frame asli berkualitas tinggi."
+                delay={0.1}
+                tooltip="Kualitas gambar terbaik tanpa kompresi"
+              />
+            </div>
+            <div className="feature-card opacity-0">
+              <FeatureCard icon={Zap} title="Burst Mode" description="Tangkap urutan moment cepat dalam rangkaian frame PNG yang tajam. Sempurna untuk aksi yang sangat cepat." delay={0.2} tooltip="Banyak frame dalam satu kali klik" />
+            </div>
+            <div className="feature-card opacity-0">
+              <FeatureCard
+                icon={Clock}
+                title="Moment Picker"
+                description="Timeline editor yang presisi dengan seek slider cepat dan boundary setter sekali klik untuk kemudahan clipping."
+                delay={0.3}
+                tooltip="Pilih durasi klip dengan presisi milidetik"
+              />
+            </div>
+          </div>
+        </section>
+      </ParallaxSection>
 
       {/* Disclaimers Section */}
       <section id="disclaimers" className="px-6 py-32 bg-black/20">
