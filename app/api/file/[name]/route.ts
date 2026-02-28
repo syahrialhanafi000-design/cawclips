@@ -24,15 +24,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Forward the content type and other relevant headers
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
-    const contentDisposition = response.headers.get('content-disposition');
+    let contentDisposition = response.headers.get('content-disposition');
+
+    // Ensure direct download
+    if (!contentDisposition) {
+      contentDisposition = `attachment; filename="${name}"`;
+    }
 
     const headers = new Headers();
     headers.set('Content-Type', contentType);
-    if (contentDisposition) {
-      headers.set('Content-Disposition', contentDisposition);
-    }
+    headers.set('Content-Disposition', contentDisposition);
 
-    // Use pipeThrough to stream the response naturally
+    // Use common security headers (optional but good practice)
+    headers.set('X-Content-Type-Options', 'nosniff');
+
     return new NextResponse(response.body, {
       status: 200,
       headers,
