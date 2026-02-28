@@ -19,8 +19,7 @@ type OutputMode = 'video' | 'super_photo' | 'burst';
 // Constants & Config
 // ────────────────────────────────────────────────────────────────────────────
 // Menghilangkan trailing slash otomatis agar path URL tidak double
-const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-const API_URL = RAW_API_URL.replace(/\/$/, '');
+const API_URL = '/api';
 const POLL_INTERVAL_MS = 3000;
 
 // Helper to extract YouTube ID
@@ -504,9 +503,11 @@ export default function VideoEditorPage() {
 
           if (data.status === 'finished' && data.download) {
             stopPolling();
-            const raw = data.download as string;
-            setDownloadUrl(raw.startsWith('http') ? raw : `${API_URL}${raw}`);
+            const raw = data.download as string; // Expecting something like "/download/filename.mp4" or just filename
+            const fileName = raw.split('/').pop() || raw;
+            setDownloadUrl(`${API_URL}/file/${fileName}`);
             setJobStatus('finished');
+
             setStatusMessage('');
             setCurrentStep(4);
 
