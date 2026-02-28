@@ -770,6 +770,7 @@ export const GlobalSettingsScalarFieldEnum = {
   minClipDuration: 'minClipDuration',
   maxClipDuration: 'maxClipDuration',
   maxClipsPerVideo: 'maxClipsPerVideo',
+  maintenanceMode: 'maintenanceMode',
   updatedAt: 'updatedAt'
 } as const
 
@@ -884,6 +885,13 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 /**

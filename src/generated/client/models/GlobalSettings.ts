@@ -43,6 +43,7 @@ export type GlobalSettingsMinAggregateOutputType = {
   minClipDuration: number | null
   maxClipDuration: number | null
   maxClipsPerVideo: number | null
+  maintenanceMode: boolean | null
   updatedAt: Date | null
 }
 
@@ -51,6 +52,7 @@ export type GlobalSettingsMaxAggregateOutputType = {
   minClipDuration: number | null
   maxClipDuration: number | null
   maxClipsPerVideo: number | null
+  maintenanceMode: boolean | null
   updatedAt: Date | null
 }
 
@@ -59,6 +61,7 @@ export type GlobalSettingsCountAggregateOutputType = {
   minClipDuration: number
   maxClipDuration: number
   maxClipsPerVideo: number
+  maintenanceMode: number
   updatedAt: number
   _all: number
 }
@@ -81,6 +84,7 @@ export type GlobalSettingsMinAggregateInputType = {
   minClipDuration?: true
   maxClipDuration?: true
   maxClipsPerVideo?: true
+  maintenanceMode?: true
   updatedAt?: true
 }
 
@@ -89,6 +93,7 @@ export type GlobalSettingsMaxAggregateInputType = {
   minClipDuration?: true
   maxClipDuration?: true
   maxClipsPerVideo?: true
+  maintenanceMode?: true
   updatedAt?: true
 }
 
@@ -97,6 +102,7 @@ export type GlobalSettingsCountAggregateInputType = {
   minClipDuration?: true
   maxClipDuration?: true
   maxClipsPerVideo?: true
+  maintenanceMode?: true
   updatedAt?: true
   _all?: true
 }
@@ -192,6 +198,7 @@ export type GlobalSettingsGroupByOutputType = {
   minClipDuration: number
   maxClipDuration: number
   maxClipsPerVideo: number
+  maintenanceMode: boolean
   updatedAt: Date
   _count: GlobalSettingsCountAggregateOutputType | null
   _avg: GlobalSettingsAvgAggregateOutputType | null
@@ -223,6 +230,7 @@ export type GlobalSettingsWhereInput = {
   minClipDuration?: Prisma.FloatFilter<"GlobalSettings"> | number
   maxClipDuration?: Prisma.FloatFilter<"GlobalSettings"> | number
   maxClipsPerVideo?: Prisma.IntFilter<"GlobalSettings"> | number
+  maintenanceMode?: Prisma.BoolFilter<"GlobalSettings"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"GlobalSettings"> | Date | string
 }
 
@@ -231,6 +239,7 @@ export type GlobalSettingsOrderByWithRelationInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -242,6 +251,7 @@ export type GlobalSettingsWhereUniqueInput = Prisma.AtLeast<{
   minClipDuration?: Prisma.FloatFilter<"GlobalSettings"> | number
   maxClipDuration?: Prisma.FloatFilter<"GlobalSettings"> | number
   maxClipsPerVideo?: Prisma.IntFilter<"GlobalSettings"> | number
+  maintenanceMode?: Prisma.BoolFilter<"GlobalSettings"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"GlobalSettings"> | Date | string
 }, "id">
 
@@ -250,6 +260,7 @@ export type GlobalSettingsOrderByWithAggregationInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.GlobalSettingsCountOrderByAggregateInput
   _avg?: Prisma.GlobalSettingsAvgOrderByAggregateInput
@@ -266,6 +277,7 @@ export type GlobalSettingsScalarWhereWithAggregatesInput = {
   minClipDuration?: Prisma.FloatWithAggregatesFilter<"GlobalSettings"> | number
   maxClipDuration?: Prisma.FloatWithAggregatesFilter<"GlobalSettings"> | number
   maxClipsPerVideo?: Prisma.IntWithAggregatesFilter<"GlobalSettings"> | number
+  maintenanceMode?: Prisma.BoolWithAggregatesFilter<"GlobalSettings"> | boolean
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"GlobalSettings"> | Date | string
 }
 
@@ -274,6 +286,7 @@ export type GlobalSettingsCreateInput = {
   minClipDuration?: number
   maxClipDuration?: number
   maxClipsPerVideo?: number
+  maintenanceMode?: boolean
   updatedAt?: Date | string
 }
 
@@ -282,6 +295,7 @@ export type GlobalSettingsUncheckedCreateInput = {
   minClipDuration?: number
   maxClipDuration?: number
   maxClipsPerVideo?: number
+  maintenanceMode?: boolean
   updatedAt?: Date | string
 }
 
@@ -290,6 +304,7 @@ export type GlobalSettingsUpdateInput = {
   minClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipsPerVideo?: Prisma.IntFieldUpdateOperationsInput | number
+  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -298,6 +313,7 @@ export type GlobalSettingsUncheckedUpdateInput = {
   minClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipsPerVideo?: Prisma.IntFieldUpdateOperationsInput | number
+  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -306,6 +322,7 @@ export type GlobalSettingsCreateManyInput = {
   minClipDuration?: number
   maxClipDuration?: number
   maxClipsPerVideo?: number
+  maintenanceMode?: boolean
   updatedAt?: Date | string
 }
 
@@ -314,6 +331,7 @@ export type GlobalSettingsUpdateManyMutationInput = {
   minClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipsPerVideo?: Prisma.IntFieldUpdateOperationsInput | number
+  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -322,6 +340,7 @@ export type GlobalSettingsUncheckedUpdateManyInput = {
   minClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipsPerVideo?: Prisma.IntFieldUpdateOperationsInput | number
+  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -330,6 +349,7 @@ export type GlobalSettingsCountOrderByAggregateInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -344,6 +364,7 @@ export type GlobalSettingsMaxOrderByAggregateInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -352,6 +373,7 @@ export type GlobalSettingsMinOrderByAggregateInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -377,6 +399,10 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 
 
 export type GlobalSettingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -384,6 +410,7 @@ export type GlobalSettingsSelect<ExtArgs extends runtime.Types.Extensions.Intern
   minClipDuration?: boolean
   maxClipDuration?: boolean
   maxClipsPerVideo?: boolean
+  maintenanceMode?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["globalSettings"]>
 
@@ -392,6 +419,7 @@ export type GlobalSettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   minClipDuration?: boolean
   maxClipDuration?: boolean
   maxClipsPerVideo?: boolean
+  maintenanceMode?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["globalSettings"]>
 
@@ -400,6 +428,7 @@ export type GlobalSettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   minClipDuration?: boolean
   maxClipDuration?: boolean
   maxClipsPerVideo?: boolean
+  maintenanceMode?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["globalSettings"]>
 
@@ -408,10 +437,11 @@ export type GlobalSettingsSelectScalar = {
   minClipDuration?: boolean
   maxClipDuration?: boolean
   maxClipsPerVideo?: boolean
+  maintenanceMode?: boolean
   updatedAt?: boolean
 }
 
-export type GlobalSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "minClipDuration" | "maxClipDuration" | "maxClipsPerVideo" | "updatedAt", ExtArgs["result"]["globalSettings"]>
+export type GlobalSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "minClipDuration" | "maxClipDuration" | "maxClipsPerVideo" | "maintenanceMode" | "updatedAt", ExtArgs["result"]["globalSettings"]>
 
 export type $GlobalSettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "GlobalSettings"
@@ -421,6 +451,7 @@ export type $GlobalSettingsPayload<ExtArgs extends runtime.Types.Extensions.Inte
     minClipDuration: number
     maxClipDuration: number
     maxClipsPerVideo: number
+    maintenanceMode: boolean
     updatedAt: Date
   }, ExtArgs["result"]["globalSettings"]>
   composites: {}
@@ -849,6 +880,7 @@ export interface GlobalSettingsFieldRefs {
   readonly minClipDuration: Prisma.FieldRef<"GlobalSettings", 'Float'>
   readonly maxClipDuration: Prisma.FieldRef<"GlobalSettings", 'Float'>
   readonly maxClipsPerVideo: Prisma.FieldRef<"GlobalSettings", 'Int'>
+  readonly maintenanceMode: Prisma.FieldRef<"GlobalSettings", 'Boolean'>
   readonly updatedAt: Prisma.FieldRef<"GlobalSettings", 'DateTime'>
 }
     

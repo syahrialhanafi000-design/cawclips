@@ -101,6 +101,7 @@ export const GlobalSettingsScalarFieldEnum = {
   minClipDuration: 'minClipDuration',
   maxClipDuration: 'maxClipDuration',
   maxClipsPerVideo: 'maxClipsPerVideo',
+  maintenanceMode: 'maintenanceMode',
   updatedAt: 'updatedAt'
 } as const
 

@@ -19,7 +19,7 @@ type OutputMode = 'video' | 'super_photo' | 'burst';
 // Constants & Config
 // ────────────────────────────────────────────────────────────────────────────
 // Menghilangkan trailing slash otomatis agar path URL tidak double
-const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://backend-cliperr-production.up.railway.app';
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 const API_URL = RAW_API_URL.replace(/\/$/, '');
 const POLL_INTERVAL_MS = 3000;
 
@@ -230,6 +230,27 @@ function Spinner({ className = 'w-4 h-4' }: { className?: string }) {
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
   );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ────────────────────────────────────────────────────────────────────────────
+function translateError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes('failed to fetch') || m.includes('network error') || m.includes('connection refused')) {
+    return 'Gagal menghubungi server. Pastikan koneksi internet stabil atau server sedang dalam maintenace';
+  }
+  if (m.includes('http error 404')) return 'Data tidak ditemukan (404).';
+  if (m.includes('http error 500')) return 'Terjadi kesalahan pada server (500).';
+  if (m.includes('http error 429')) return 'Terlalu banyak permintaan. Silakan tunggu sebentar.';
+  if (m.includes('failed to start clip job')) return 'Gagal memulai proses clipping.';
+  if (m.includes('unknown error')) return 'Terjadi kesalahan sistem yang tidak diketahui.';
+  if (m.includes('minimal durasi')) return msg;
+  if (m.includes('maksimal durasi')) return msg;
+  if (m.includes('mencapai batas maksimal')) return msg;
+
+  // Cleanup potential technical prefixes
+  return msg.replace(/^error:/i, '').trim() || 'Maaf, terjadi kendala teknis.';
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -505,7 +526,7 @@ export default function VideoEditorPage() {
             }
           } else if (data.status === 'error') {
             stopPolling();
-            setErrorMsg(data.msg ?? 'An unknown error occurred.');
+            setErrorMsg(translateError(data.msg ?? 'An unknown error occurred.'));
             setJobStatus('error');
             setStatusMessage('');
           } else if (isStillProcessing) {
@@ -521,7 +542,7 @@ export default function VideoEditorPage() {
             pollTimerRef.current = setTimeout(check, POLL_INTERVAL_MS);
           } else {
             stopPolling();
-            setErrorMsg(err instanceof Error ? err.message : 'Network error. Backend might be down.');
+            setErrorMsg(translateError(err instanceof Error ? err.message : 'Network error. Backend might be down.'));
             setJobStatus('error');
           }
         }
@@ -539,14 +560,14 @@ export default function VideoEditorPage() {
     // Validation: Min Duration (Exempt super_photo)
     const isDurationLimited = mode === 'video' || mode === 'burst';
     if (isDurationLimited && clipDuration < globalSettings.minClipDuration) {
-      setErrorMsg(`Minimal durasi clip adalah ${globalSettings.minClipDuration} detik.`);
+      setErrorMsg(translateError(`Minimal durasi clip adalah ${globalSettings.minClipDuration} detik.`));
       return;
     }
 
     // Validation: Max Duration (Exempt super_photo)
     if (isDurationLimited && clipDuration > (globalSettings.maxClipDuration || 600)) {
       const msg = `Maksimal durasi clip adalah ${Math.floor((globalSettings.maxClipDuration || 600) / 60)} menit.`;
-      setErrorMsg(msg);
+      setErrorMsg(translateError(msg));
       window.alert(msg);
       return;
     }
@@ -554,7 +575,7 @@ export default function VideoEditorPage() {
     // Validation: Max Clips (Only for video)
     if (mode === 'video' && currentClipCount >= globalSettings.maxClipsPerVideo) {
       const msg = `Video ini sudah mencapai batas maksimal ${globalSettings.maxClipsPerVideo} clips.`;
-      setErrorMsg(msg);
+      setErrorMsg(translateError(msg));
       window.alert(msg);
       return;
     }
@@ -593,7 +614,7 @@ export default function VideoEditorPage() {
       pollStatus(job_id);
     } catch (err) {
       stopPolling();
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to start clip job.');
+      setErrorMsg(translateError(err instanceof Error ? err.message : 'Failed to start clip job.'));
       setJobStatus('error');
     }
   };

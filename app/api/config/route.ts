@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     let settings = await prisma.globalSettings.findUnique({
@@ -14,6 +16,7 @@ export async function GET() {
           minClipDuration: 5.0,
           maxClipDuration: 600.0,
           maxClipsPerVideo: 5,
+          maintenanceMode: false,
         },
       });
     }
