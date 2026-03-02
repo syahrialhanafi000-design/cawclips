@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { Rnd } from 'react-rnd';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -307,6 +308,36 @@ export default function VideoEditorPage() {
   const [globalSettings, setGlobalSettings] = useState({ minClipDuration: 5, maxClipDuration: 600, maxClipsPerVideo: 5 });
   const [currentClipCount, setCurrentClipCount] = useState(0);
 
+  // Crop states
+  const [enableCrop, setEnableCrop] = useState(false);
+  const [crop, setCrop] = useState({ x: 25, y: 25, width: 50, height: 50 });
+  const [playerSize, setPlayerSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const container = playerContainerRef.current;
+    if (!container) return;
+
+    // Initial size check
+    const rect = container.getBoundingClientRect();
+    if (rect.width > 0) {
+      setPlayerSize({ width: rect.width, height: rect.height });
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setPlayerSize({
+            width: entry.contentRect.width,
+            height: entry.contentRect.height,
+          });
+        }
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [activeUrl, playerReady]);
+
   useEffect(() => {
     async function fetchConfig() {
       try {
@@ -599,6 +630,13 @@ export default function VideoEditorPage() {
         formData.append('interval', burstInterval.toString());
       }
 
+      if (mode === 'super_photo' && enableCrop) {
+        formData.append('crop_w', `iw*${Math.max(0.01, crop.width / 100).toFixed(4)}`);
+        formData.append('crop_h', `ih*${Math.max(0.01, crop.height / 100).toFixed(4)}`);
+        formData.append('crop_x', `iw*${Math.max(0, crop.x / 100).toFixed(4)}`);
+        formData.append('crop_y', `ih*${Math.max(0, crop.y / 100).toFixed(4)}`);
+      }
+
       const res = await fetch(`${API_URL}/download`, {
         method: 'POST',
         body: formData,
@@ -856,6 +894,45 @@ export default function VideoEditorPage() {
                     if (playerRef.current) setPlayerInstance(playerRef.current);
                   }}
                 />
+
+                {/* Crop Overlay */}
+                {mode === 'super_photo' && enableCrop && playerSize.width > 0 && (
+                  <Rnd
+                    bounds="parent"
+                    size={{
+                      width: (crop.width / 100) * playerSize.width,
+                      height: (crop.height / 100) * playerSize.height,
+                    }}
+                    position={{
+                      x: (crop.x / 100) * playerSize.width,
+                      y: (crop.y / 100) * playerSize.height,
+                    }}
+                    onDragStop={(e, d) => {
+                      setCrop((prev) => ({
+                        ...prev,
+                        x: Math.max(0, (d.x / playerSize.width) * 100),
+                        y: Math.max(0, (d.y / playerSize.height) * 100),
+                      }));
+                    }}
+                    onResizeStop={(e, direction, ref, delta, position) => {
+                      setCrop({
+                        width: Math.max(0.01, (ref.offsetWidth / playerSize.width) * 100),
+                        height: Math.max(0.01, (ref.offsetHeight / playerSize.height) * 100),
+                        x: Math.max(0, (position.x / playerSize.width) * 100),
+                        y: Math.max(0, (position.y / playerSize.height) * 100),
+                      });
+                    }}
+                    className="z-50 border-2 border-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.3)] bg-teal-500/10 pointer-events-auto"
+                    style={{ cursor: 'move' }}>
+                    {/* 3x3 Grid */}
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                      <div className="absolute top-1/3 left-0 right-0 h-px bg-white/30" />
+                      <div className="absolute top-2/3 left-0 right-0 h-px bg-white/30" />
+                      <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/30" />
+                      <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/30" />
+                    </div>
+                  </Rnd>
+                )}
               </div>
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500">
@@ -1113,6 +1190,19 @@ export default function VideoEditorPage() {
                 </button>
               </Tooltip>
             </div>
+
+            {mode === 'super_photo' && (
+              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className="relative">
+                    <input type="checkbox" checked={enableCrop} onChange={(e) => setEnableCrop(e.target.checked)} className="sr-only" />
+                    <div className={`w-10 h-5 rounded-full transition-colors ${enableCrop ? 'bg-teal-600' : 'bg-slate-700'}`} />
+                    <div className={`absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform ${enableCrop ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-teal-400 transition-colors">Aktifkan Crop</span>
+                </label>
+              </div>
+            )}
 
             {(mode === 'burst' || showWelcome) && (
               <div id="tour-burst-interval" className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
