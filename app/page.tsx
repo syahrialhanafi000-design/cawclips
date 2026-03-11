@@ -16,6 +16,7 @@ const MouseFollower = dynamic(() => import('@/components/MouseFollower'), { ssr:
 import TextScramble from '@/components/TextScramble';
 import ExtremeTilt from '@/components/ExtremeTilt';
 
+
 import ScrollVelocityEffect from '@/components/ScrollVelocityEffect';
 import ParallaxSection from '@/components/ParallaxSection';
 
@@ -29,7 +30,7 @@ const FeatureCard = ({ icon: Icon, title, description, delay, tooltip }: { icon:
         transition={{ delay, duration: 0.5 }}
         className="h-full p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-teal-500/50 hover:bg-white/10 transition-all group relative"
         style={{ transformStyle: 'preserve-3d' }}>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 blur-[40px] rounded-full -mr-16 -mt-16 group-hover:bg-teal-500/10 transition-colors" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 blur-2xl rounded-full -mr-16 -mt-16 group-hover:bg-teal-500/10 transition-colors" />
         <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 mb-6 group-hover:scale-110 transition-transform relative z-10" style={{ transform: 'translateZ(30px)' }}>
           <Icon className="w-7 h-7 text-teal-400" />
         </div>
@@ -253,6 +254,17 @@ export default function LandingPage() {
             </div>
           </motion.div>
         </Anime3DContainer>
+      </section>
+
+      {/* Multi-Stream Dashboard Section */}
+      <section id="multi-stream" className="relative z-20 py-10 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tighter">
+            PRO MULTI-STREAM DASHBOARD
+          </h2>
+          <p className="text-slate-400 font-medium">Tonton semua stream favoritmu dalam satu layar yang bisa diatur sesuka hati.</p>
+        </div>
+
       </section>
 
       {/* Features Grid */}

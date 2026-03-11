@@ -6,7 +6,6 @@ export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get('user_session')?.value;
-    
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -40,7 +39,6 @@ export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get('user_session')?.value;
-    
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

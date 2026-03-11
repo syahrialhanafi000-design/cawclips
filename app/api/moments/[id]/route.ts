@@ -9,7 +9,6 @@ export async function DELETE(
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get('user_session')?.value;
-    
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

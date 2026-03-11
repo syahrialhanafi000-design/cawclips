@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AppUser {
+  id              String           @id @default(uuid())
+  username        String           @unique
+  password        String
+  tiktokUsername  String?
+  tiktokLink      String
+  status          UserStatus       @default(PENDING)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  videoClipCounts VideoClipCount[]
+  savedMoments    SavedMoment[]
+}
+
+model SavedMoment {
+  id        String   @id @default(uuid())
+  userId    String
+  videoId   String // The video URL or ID (e.g., extracted YouTube ID)
+  label     String
+  startTime Float
+  endTime   Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+}
+
+model GlobalSettings {
+  id               String   @id @default("global")
+  minClipDuration  Float    @default(5.0)
+  maxClipDuration  Float    @default(600.0)
+  maxClipsPerVideo Int      @default(5)
+  updatedAt        DateTime @updatedAt
+  maintenanceMode  Boolean  @default(false)
+}
+
+model VideoClipCount {
+  id        String   @id @default(uuid())
+  userId    String
+  videoId   String
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+  user      AppUser  @relation(fields: [userId], references: [id])
+
+  @@unique([userId, videoId])
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
