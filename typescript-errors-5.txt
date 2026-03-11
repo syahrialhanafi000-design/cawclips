@@ -1,0 +1,1 @@
+app/editor/page.tsx(16,44): error TS2345: Argument of type '<B extends Breakpoint = string>(props: ResponsiveGridLayoutProps<B>) => ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to parameter of type 'GridLayoutProps'.

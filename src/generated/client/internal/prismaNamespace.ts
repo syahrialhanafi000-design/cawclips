@@ -385,6 +385,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   AppUser: 'AppUser',
+  SavedMoment: 'SavedMoment',
   Admin: 'Admin',
   GlobalSettings: 'GlobalSettings',
   VideoClipCount: 'VideoClipCount'
@@ -403,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "appUser" | "admin" | "globalSettings" | "videoClipCount"
+    modelProps: "appUser" | "savedMoment" | "admin" | "globalSettings" | "videoClipCount"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -478,6 +479,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AppUserCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AppUserCountAggregateOutputType> | number
+        }
+      }
+    }
+    SavedMoment: {
+      payload: Prisma.$SavedMomentPayload<ExtArgs>
+      fields: Prisma.SavedMomentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SavedMomentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SavedMomentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>
+        }
+        findFirst: {
+          args: Prisma.SavedMomentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SavedMomentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>
+        }
+        findMany: {
+          args: Prisma.SavedMomentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>[]
+        }
+        create: {
+          args: Prisma.SavedMomentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>
+        }
+        createMany: {
+          args: Prisma.SavedMomentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SavedMomentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>[]
+        }
+        delete: {
+          args: Prisma.SavedMomentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>
+        }
+        update: {
+          args: Prisma.SavedMomentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>
+        }
+        deleteMany: {
+          args: Prisma.SavedMomentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SavedMomentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SavedMomentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>[]
+        }
+        upsert: {
+          args: Prisma.SavedMomentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedMomentPayload>
+        }
+        aggregate: {
+          args: Prisma.SavedMomentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSavedMoment>
+        }
+        groupBy: {
+          args: Prisma.SavedMomentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SavedMomentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SavedMomentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SavedMomentCountAggregateOutputType> | number
         }
       }
     }
@@ -756,6 +831,20 @@ export const AppUserScalarFieldEnum = {
 export type AppUserScalarFieldEnum = (typeof AppUserScalarFieldEnum)[keyof typeof AppUserScalarFieldEnum]
 
 
+export const SavedMomentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  videoId: 'videoId',
+  label: 'label',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SavedMomentScalarFieldEnum = (typeof SavedMomentScalarFieldEnum)[keyof typeof SavedMomentScalarFieldEnum]
+
+
 export const AdminScalarFieldEnum = {
   id: 'id',
   username: 'username',
@@ -770,8 +859,8 @@ export const GlobalSettingsScalarFieldEnum = {
   minClipDuration: 'minClipDuration',
   maxClipDuration: 'maxClipDuration',
   maxClipsPerVideo: 'maxClipsPerVideo',
-  maintenanceMode: 'maintenanceMode',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  maintenanceMode: 'maintenanceMode'
 } as const
 
 export type GlobalSettingsScalarFieldEnum = (typeof GlobalSettingsScalarFieldEnum)[keyof typeof GlobalSettingsScalarFieldEnum]
@@ -990,6 +1079,7 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   appUser?: Prisma.AppUserOmit
+  savedMoment?: Prisma.SavedMomentOmit
   admin?: Prisma.AdminOmit
   globalSettings?: Prisma.GlobalSettingsOmit
   videoClipCount?: Prisma.VideoClipCountOmit

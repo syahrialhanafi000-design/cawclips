@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   AppUser: 'AppUser',
+  SavedMoment: 'SavedMoment',
   Admin: 'Admin',
   GlobalSettings: 'GlobalSettings',
   VideoClipCount: 'VideoClipCount'
@@ -87,6 +88,20 @@ export const AppUserScalarFieldEnum = {
 export type AppUserScalarFieldEnum = (typeof AppUserScalarFieldEnum)[keyof typeof AppUserScalarFieldEnum]
 
 
+export const SavedMomentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  videoId: 'videoId',
+  label: 'label',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SavedMomentScalarFieldEnum = (typeof SavedMomentScalarFieldEnum)[keyof typeof SavedMomentScalarFieldEnum]
+
+
 export const AdminScalarFieldEnum = {
   id: 'id',
   username: 'username',
@@ -101,8 +116,8 @@ export const GlobalSettingsScalarFieldEnum = {
   minClipDuration: 'minClipDuration',
   maxClipDuration: 'maxClipDuration',
   maxClipsPerVideo: 'maxClipsPerVideo',
-  maintenanceMode: 'maintenanceMode',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  maintenanceMode: 'maintenanceMode'
 } as const
 
 export type GlobalSettingsScalarFieldEnum = (typeof GlobalSettingsScalarFieldEnum)[keyof typeof GlobalSettingsScalarFieldEnum]

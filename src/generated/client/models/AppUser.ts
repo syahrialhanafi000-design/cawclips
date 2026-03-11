@@ -207,6 +207,7 @@ export type AppUserWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"AppUser"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AppUser"> | Date | string
   videoClipCounts?: Prisma.VideoClipCountListRelationFilter
+  savedMoments?: Prisma.SavedMomentListRelationFilter
 }
 
 export type AppUserOrderByWithRelationInput = {
@@ -219,6 +220,7 @@ export type AppUserOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   videoClipCounts?: Prisma.VideoClipCountOrderByRelationAggregateInput
+  savedMoments?: Prisma.SavedMomentOrderByRelationAggregateInput
 }
 
 export type AppUserWhereUniqueInput = Prisma.AtLeast<{
@@ -234,6 +236,7 @@ export type AppUserWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"AppUser"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AppUser"> | Date | string
   videoClipCounts?: Prisma.VideoClipCountListRelationFilter
+  savedMoments?: Prisma.SavedMomentListRelationFilter
 }, "id" | "username">
 
 export type AppUserOrderByWithAggregationInput = {
@@ -274,6 +277,7 @@ export type AppUserCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   videoClipCounts?: Prisma.VideoClipCountCreateNestedManyWithoutUserInput
+  savedMoments?: Prisma.SavedMomentCreateNestedManyWithoutUserInput
 }
 
 export type AppUserUncheckedCreateInput = {
@@ -286,6 +290,7 @@ export type AppUserUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   videoClipCounts?: Prisma.VideoClipCountUncheckedCreateNestedManyWithoutUserInput
+  savedMoments?: Prisma.SavedMomentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type AppUserUpdateInput = {
@@ -298,6 +303,7 @@ export type AppUserUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   videoClipCounts?: Prisma.VideoClipCountUpdateManyWithoutUserNestedInput
+  savedMoments?: Prisma.SavedMomentUpdateManyWithoutUserNestedInput
 }
 
 export type AppUserUncheckedUpdateInput = {
@@ -310,6 +316,7 @@ export type AppUserUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   videoClipCounts?: Prisma.VideoClipCountUncheckedUpdateManyWithoutUserNestedInput
+  savedMoments?: Prisma.SavedMomentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type AppUserCreateManyInput = {
@@ -399,6 +406,20 @@ export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
 
+export type AppUserCreateNestedOneWithoutSavedMomentsInput = {
+  create?: Prisma.XOR<Prisma.AppUserCreateWithoutSavedMomentsInput, Prisma.AppUserUncheckedCreateWithoutSavedMomentsInput>
+  connectOrCreate?: Prisma.AppUserCreateOrConnectWithoutSavedMomentsInput
+  connect?: Prisma.AppUserWhereUniqueInput
+}
+
+export type AppUserUpdateOneRequiredWithoutSavedMomentsNestedInput = {
+  create?: Prisma.XOR<Prisma.AppUserCreateWithoutSavedMomentsInput, Prisma.AppUserUncheckedCreateWithoutSavedMomentsInput>
+  connectOrCreate?: Prisma.AppUserCreateOrConnectWithoutSavedMomentsInput
+  upsert?: Prisma.AppUserUpsertWithoutSavedMomentsInput
+  connect?: Prisma.AppUserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AppUserUpdateToOneWithWhereWithoutSavedMomentsInput, Prisma.AppUserUpdateWithoutSavedMomentsInput>, Prisma.AppUserUncheckedUpdateWithoutSavedMomentsInput>
+}
+
 export type AppUserCreateNestedOneWithoutVideoClipCountsInput = {
   create?: Prisma.XOR<Prisma.AppUserCreateWithoutVideoClipCountsInput, Prisma.AppUserUncheckedCreateWithoutVideoClipCountsInput>
   connectOrCreate?: Prisma.AppUserCreateOrConnectWithoutVideoClipCountsInput
@@ -413,6 +434,70 @@ export type AppUserUpdateOneRequiredWithoutVideoClipCountsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.AppUserUpdateToOneWithWhereWithoutVideoClipCountsInput, Prisma.AppUserUpdateWithoutVideoClipCountsInput>, Prisma.AppUserUncheckedUpdateWithoutVideoClipCountsInput>
 }
 
+export type AppUserCreateWithoutSavedMomentsInput = {
+  id?: string
+  username: string
+  password: string
+  tiktokUsername?: string | null
+  tiktokLink: string
+  status?: $Enums.UserStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  videoClipCounts?: Prisma.VideoClipCountCreateNestedManyWithoutUserInput
+}
+
+export type AppUserUncheckedCreateWithoutSavedMomentsInput = {
+  id?: string
+  username: string
+  password: string
+  tiktokUsername?: string | null
+  tiktokLink: string
+  status?: $Enums.UserStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  videoClipCounts?: Prisma.VideoClipCountUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type AppUserCreateOrConnectWithoutSavedMomentsInput = {
+  where: Prisma.AppUserWhereUniqueInput
+  create: Prisma.XOR<Prisma.AppUserCreateWithoutSavedMomentsInput, Prisma.AppUserUncheckedCreateWithoutSavedMomentsInput>
+}
+
+export type AppUserUpsertWithoutSavedMomentsInput = {
+  update: Prisma.XOR<Prisma.AppUserUpdateWithoutSavedMomentsInput, Prisma.AppUserUncheckedUpdateWithoutSavedMomentsInput>
+  create: Prisma.XOR<Prisma.AppUserCreateWithoutSavedMomentsInput, Prisma.AppUserUncheckedCreateWithoutSavedMomentsInput>
+  where?: Prisma.AppUserWhereInput
+}
+
+export type AppUserUpdateToOneWithWhereWithoutSavedMomentsInput = {
+  where?: Prisma.AppUserWhereInput
+  data: Prisma.XOR<Prisma.AppUserUpdateWithoutSavedMomentsInput, Prisma.AppUserUncheckedUpdateWithoutSavedMomentsInput>
+}
+
+export type AppUserUpdateWithoutSavedMomentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  tiktokUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktokLink?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  videoClipCounts?: Prisma.VideoClipCountUpdateManyWithoutUserNestedInput
+}
+
+export type AppUserUncheckedUpdateWithoutSavedMomentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  tiktokUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktokLink?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  videoClipCounts?: Prisma.VideoClipCountUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type AppUserCreateWithoutVideoClipCountsInput = {
   id?: string
   username: string
@@ -422,6 +507,7 @@ export type AppUserCreateWithoutVideoClipCountsInput = {
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  savedMoments?: Prisma.SavedMomentCreateNestedManyWithoutUserInput
 }
 
 export type AppUserUncheckedCreateWithoutVideoClipCountsInput = {
@@ -433,6 +519,7 @@ export type AppUserUncheckedCreateWithoutVideoClipCountsInput = {
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  savedMoments?: Prisma.SavedMomentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type AppUserCreateOrConnectWithoutVideoClipCountsInput = {
@@ -460,6 +547,7 @@ export type AppUserUpdateWithoutVideoClipCountsInput = {
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  savedMoments?: Prisma.SavedMomentUpdateManyWithoutUserNestedInput
 }
 
 export type AppUserUncheckedUpdateWithoutVideoClipCountsInput = {
@@ -471,6 +559,7 @@ export type AppUserUncheckedUpdateWithoutVideoClipCountsInput = {
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  savedMoments?: Prisma.SavedMomentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -480,10 +569,12 @@ export type AppUserUncheckedUpdateWithoutVideoClipCountsInput = {
 
 export type AppUserCountOutputType = {
   videoClipCounts: number
+  savedMoments: number
 }
 
 export type AppUserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   videoClipCounts?: boolean | AppUserCountOutputTypeCountVideoClipCountsArgs
+  savedMoments?: boolean | AppUserCountOutputTypeCountSavedMomentsArgs
 }
 
 /**
@@ -503,6 +594,13 @@ export type AppUserCountOutputTypeCountVideoClipCountsArgs<ExtArgs extends runti
   where?: Prisma.VideoClipCountWhereInput
 }
 
+/**
+ * AppUserCountOutputType without action
+ */
+export type AppUserCountOutputTypeCountSavedMomentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SavedMomentWhereInput
+}
+
 
 export type AppUserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -514,6 +612,7 @@ export type AppUserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   createdAt?: boolean
   updatedAt?: boolean
   videoClipCounts?: boolean | Prisma.AppUser$videoClipCountsArgs<ExtArgs>
+  savedMoments?: boolean | Prisma.AppUser$savedMomentsArgs<ExtArgs>
   _count?: boolean | Prisma.AppUserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["appUser"]>
 
@@ -553,6 +652,7 @@ export type AppUserSelectScalar = {
 export type AppUserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "password" | "tiktokUsername" | "tiktokLink" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["appUser"]>
 export type AppUserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   videoClipCounts?: boolean | Prisma.AppUser$videoClipCountsArgs<ExtArgs>
+  savedMoments?: boolean | Prisma.AppUser$savedMomentsArgs<ExtArgs>
   _count?: boolean | Prisma.AppUserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type AppUserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -562,6 +662,7 @@ export type $AppUserPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "AppUser"
   objects: {
     videoClipCounts: Prisma.$VideoClipCountPayload<ExtArgs>[]
+    savedMoments: Prisma.$SavedMomentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -967,6 +1068,7 @@ readonly fields: AppUserFieldRefs;
 export interface Prisma__AppUserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   videoClipCounts<T extends Prisma.AppUser$videoClipCountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AppUser$videoClipCountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VideoClipCountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  savedMoments<T extends Prisma.AppUser$savedMomentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AppUser$savedMomentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SavedMomentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1413,6 +1515,30 @@ export type AppUser$videoClipCountsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.VideoClipCountScalarFieldEnum | Prisma.VideoClipCountScalarFieldEnum[]
+}
+
+/**
+ * AppUser.savedMoments
+ */
+export type AppUser$savedMomentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SavedMoment
+   */
+  select?: Prisma.SavedMomentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SavedMoment
+   */
+  omit?: Prisma.SavedMomentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SavedMomentInclude<ExtArgs> | null
+  where?: Prisma.SavedMomentWhereInput
+  orderBy?: Prisma.SavedMomentOrderByWithRelationInput | Prisma.SavedMomentOrderByWithRelationInput[]
+  cursor?: Prisma.SavedMomentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SavedMomentScalarFieldEnum | Prisma.SavedMomentScalarFieldEnum[]
 }
 
 /**

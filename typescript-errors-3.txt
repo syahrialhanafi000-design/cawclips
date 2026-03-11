@@ -1,0 +1,15 @@
+app/editor/page.tsx(13,27): error TS2307: Cannot find module 'react-grid-layout/build/WidthProvider' or its corresponding type declarations.
+app/editor/page.tsx(437,10): error TS2451: Cannot redeclare block-scoped variable 'playerInstance'.
+app/editor/page.tsx(437,26): error TS2451: Cannot redeclare block-scoped variable 'setPlayerInstance'.
+app/editor/page.tsx(438,9): error TS2451: Cannot redeclare block-scoped variable 'playerRef'.
+app/editor/page.tsx(439,9): error TS2451: Cannot redeclare block-scoped variable 'playerContainerRef'.
+app/editor/page.tsx(440,9): error TS2451: Cannot redeclare block-scoped variable 'resultRef'.
+app/editor/page.tsx(589,9): error TS2451: Cannot redeclare block-scoped variable 'playerContainerRef'.
+app/editor/page.tsx(590,9): error TS2451: Cannot redeclare block-scoped variable 'resultRef'.
+app/editor/page.tsx(593,9): error TS2451: Cannot redeclare block-scoped variable 'playerRef'.
+app/editor/page.tsx(595,10): error TS2451: Cannot redeclare block-scoped variable 'playerInstance'.
+app/editor/page.tsx(595,26): error TS2451: Cannot redeclare block-scoped variable 'setPlayerInstance'.
+app/editor/page.tsx(891,56): error TS2304: Cannot find name 'crop'.
+app/editor/page.tsx(892,56): error TS2304: Cannot find name 'crop'.
+app/editor/page.tsx(893,53): error TS2304: Cannot find name 'crop'.
+app/editor/page.tsx(894,53): error TS2304: Cannot find name 'crop'.

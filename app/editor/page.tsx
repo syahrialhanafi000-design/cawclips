@@ -16,6 +16,15 @@ const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as Rea
 type JobStatus = 'idle' | 'loading' | 'processing' | 'finished' | 'error';
 type OutputMode = 'video' | 'super_photo' | 'burst';
 
+export interface SavedMoment {
+  id: string;
+  videoId: string;
+  label: string;
+  startTime: number;
+  endTime: number;
+  createdAt: string;
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Constants & Config
 // ────────────────────────────────────────────────────────────────────────────
@@ -292,6 +301,7 @@ export default function VideoEditorPage() {
   const [downloadUrl, setDownloadUrl] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
+  const [jobId, setJobId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
 
   const [isPreviewing, setIsPreviewing] = useState(false);
@@ -307,6 +317,12 @@ export default function VideoEditorPage() {
 
   const [globalSettings, setGlobalSettings] = useState({ minClipDuration: 5, maxClipDuration: 600, maxClipsPerVideo: 5 });
   const [currentClipCount, setCurrentClipCount] = useState(0);
+
+  // Moments states
+  const [savedMoments, setSavedMoments] = useState<SavedMoment[]>([]);
+  const [isSavingMoment, setIsSavingMoment] = useState(false);
+  const [momentLabel, setMomentLabel] = useState('');
+  const [showMomentsPanel, setShowMomentsPanel] = useState(false);
 
   // Crop states
   const [enableCrop, setEnableCrop] = useState(false);
@@ -369,7 +385,22 @@ export default function VideoEditorPage() {
         console.error('Failed to fetch clip count:', err);
       }
     }
+    
+    async function fetchMoments() {
+      try {
+        const videoId = extractVideoId(activeUrl);
+        const res = await fetch(`/api/moments?videoId=${videoId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSavedMoments(data.moments || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch moments:', err);
+      }
+    }
+
     fetchClipCount();
+    fetchMoments();
   }, [activeUrl]);
 
   useEffect(() => {
@@ -492,12 +523,21 @@ export default function VideoEditorPage() {
     setActiveUrl(trimmed);
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
+    if (jobId) {
+      try {
+        await fetch(`${API_URL}/cancel/${jobId}`, { method: 'POST' });
+        console.log('[DEBUG] Job cancelled on backend:', jobId);
+      } catch (err) {
+        console.error('[DEBUG] Failed to notify backend of cancellation:', err);
+      }
+    }
     setJobStatus('idle');
     setDownloadUrl('');
     setErrorMsg('');
     setStatusMessage('');
     setCurrentStep(0);
+    setJobId(null);
   };
 
   const handleReset = useCallback(() => {
@@ -506,6 +546,7 @@ export default function VideoEditorPage() {
     setErrorMsg('');
     setStatusMessage('');
     setCurrentStep(0);
+    setJobId(null);
   }, []);
 
   const handleDuration = (d: number) => {
@@ -585,6 +626,52 @@ export default function VideoEditorPage() {
     [stopPolling, activeUrl, mode],
   );
 
+  const handleSaveMoment = async () => {
+    if (!activeUrl || isSavingMoment) return;
+    setIsSavingMoment(true);
+    try {
+      const videoId = extractVideoId(activeUrl);
+      const res = await fetch('/api/moments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoId,
+          label: momentLabel || `Momen ${toHMS(startTime)} - ${toHMS(endTime)}`,
+          startTime,
+          endTime
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSavedMoments(prev => [...prev, data.moment]);
+        setMomentLabel('');
+        // Show success briefly
+        const successMsg = 'Momen berhasil disimpan!';
+        setStatusMessage(successMsg);
+        setTimeout(() => { if (statusMessage === successMsg) setStatusMessage(''); }, 3000);
+      } else {
+        throw new Error('Gagal menyimpan momen');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Gagal menyimpan momen');
+    } finally {
+      setIsSavingMoment(false);
+    }
+  };
+
+  const handleDeleteMoment = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Disable seeking when clicking delete
+    try {
+      const res = await fetch(`/api/moments/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setSavedMoments(prev => prev.filter(m => m.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to delete moment:', err);
+    }
+  };
+
   const handleCreateClip = async () => {
     if (!activeUrl || duration === 0) return;
 
@@ -648,6 +735,7 @@ export default function VideoEditorPage() {
       }
 
       const { job_id } = await res.json();
+      setJobId(job_id);
       setJobStatus('processing');
       pollStatus(job_id);
     } catch (err) {
@@ -1038,22 +1126,95 @@ export default function VideoEditorPage() {
         {/* Moment Picker Panel */}
         <div
           className={`rounded-2xl border ${clipDuration > globalSettings.maxClipDuration ? 'border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'border-white/8'} bg-[#0a1628] p-5 flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-500 transition-all`}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
+              <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center border border-teal-500/30 shrink-0">
                 <svg className="w-4 h-4 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
               </div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest">Pemilih Momen</h3>
+              <h3 className="text-sm font-bold text-white uppercase tracking-widest truncate">Pemilih Momen</h3>
             </div>
-            <div className="px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20">
-              <span className="text-xs font-mono text-teal-400 font-bold">{toHMS(currentTime, true)}</span>
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <div className="px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 shrink-0 flex items-center justify-center flex-1 sm:flex-none">
+                <span className="text-xs font-mono text-teal-400 font-bold">{toHMS(currentTime, true)}</span>
+              </div>
+              <div className="w-px h-6 bg-white/10 hidden sm:block" />
+              <button 
+                onClick={() => setShowMomentsPanel(!showMomentsPanel)}
+                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${showMomentsPanel ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}>
+                <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                </svg>
+                <span className="truncate">Momen ({savedMoments.length})</span>
+              </button>
             </div>
           </div>
 
           <div className="flex flex-col gap-6">
+            
+            {/* Saved Moments Panel */}
+            {showMomentsPanel && (
+              <div className="bg-black/30 w-full rounded-xl border border-indigo-500/20 overflow-hidden shrink-0 animate-in slide-in-from-top-2 duration-300">
+                <div className="bg-indigo-500/10 px-3 sm:px-4 py-3 border-b border-indigo-500/10 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <svg className="w-4 h-4 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                    <span className="text-sm font-semibold text-indigo-100 truncate">Daftar Momen</span>
+                  </div>
+                  <button onClick={() => setShowMomentsPanel(false)} className="text-slate-400 hover:text-white shrink-0 p-1">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="p-4 max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-2">
+                  {savedMoments.length === 0 ? (
+                    <div className="text-center py-6 text-slate-500 text-sm">
+                      Belum ada momen yang disimpan untuk video ini.
+                    </div>
+                  ) : (
+                    savedMoments.map(moment => (
+                      <div 
+                        key={moment.id} 
+                        onClick={() => {
+                          setStartTime(moment.startTime);
+                          setEndTime(moment.endTime);
+                          const player = playerInstance || playerRef.current;
+                          if (player) {
+                            const target = player.seekTo ? player : player.getInternalPlayer?.() || player;
+                            if (typeof target.seekTo === 'function') target.seekTo(moment.startTime, 'seconds');
+                            else if (target.currentTime !== undefined) target.currentTime = moment.startTime;
+                            setCurrentTime(moment.startTime);
+                          }
+                        }}
+                        className="group flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/30 cursor-pointer transition-all gap-2"
+                      >
+                        <div className="flex flex-col gap-1 min-w-0 flex-1 pr-2">
+                          <span className="text-sm font-semibold text-white group-hover:text-indigo-300 transition-colors truncate">{moment.label}</span>
+                          <span className="text-[10px] sm:text-xs font-mono text-slate-400 truncate">
+                            {toHMS(moment.startTime)} - {toHMS(moment.endTime)} ({toHMS(moment.endTime - moment.startTime)})
+                          </span>
+                        </div>
+                        <button 
+                          onClick={(e) => handleDeleteMoment(moment.id, e)}
+                          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-500/20 rounded-lg transition-all shrink-0"
+                          title="Hapus Momen"
+                        >
+                          <svg className="w-4 h-4 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Seek Slider */}
             <Tooltip content="Geser kursor ini untuk mencari posisi waktu secara cepat" position="top" className="w-full">
               <div className="flex flex-col gap-2 w-full">
@@ -1107,6 +1268,31 @@ export default function VideoEditorPage() {
                       <span className="text-xs font-bold text-white">Selesai Sini</span>
                     </button>
                   </Tooltip>
+                </div>
+                
+                {/* Save Moment Inline Feature */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2">
+                   <div className="relative flex-1 min-w-0">
+                      <input 
+                        type="text" 
+                        value={momentLabel}
+                        onChange={(e) => setMomentLabel(e.target.value)}
+                        placeholder="Nama momen (opsional)..."
+                        className="w-full h-10 sm:h-9 rounded-lg px-3 text-xs bg-black/40 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:bg-white/5 transition-all"
+                      />
+                   </div>
+                   <button 
+                     onClick={handleSaveMoment}
+                     disabled={isSavingMoment || duration === 0}
+                     className="w-full sm:w-auto h-10 sm:h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold transition-colors flex items-center justify-center gap-2 shrink-0"
+                   >
+                     {isSavingMoment ? <Spinner className="w-3 h-3 text-white" /> : (
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                     )}
+                     <span>Simpan</span>
+                   </button>
                 </div>
               </div>
 
@@ -1253,7 +1439,7 @@ export default function VideoEditorPage() {
               <button
                 onClick={handleDownload}
                 disabled={isDownloading}
-                className="flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm shrink-0 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-emerald-900/40">
+                className="flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-semibold w-full sm:w-auto text-sm shrink-0 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-emerald-900/40">
                 {isDownloading ? (
                   <>
                     <Spinner />
@@ -1395,9 +1581,17 @@ export default function VideoEditorPage() {
               </div>
 
               {/* Tip Text */}
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/5">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-                <span className="text-[10px] text-slate-500 font-medium italic">Jangan tutup tab ini sampai proses selesai</span>
+              <span className="text-[10px] text-slate-500 font-medium italic">Jangan tutup tab ini sampai proses selesai</span>
+
+              {/* Action Button while Processing */}
+              <div className="flex justify-center">
+                <button onClick={handleCancel} className="px-6 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-400 text-xs font-bold hover:bg-rose-500/10 transition-all flex items-center gap-2">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  Batalkan Proses
+                </button>
               </div>
             </div>
           </div>

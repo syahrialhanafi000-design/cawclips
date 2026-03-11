@@ -17,6 +17,19 @@ model AppUser {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   videoClipCounts VideoClipCount[]
+  savedMoments    SavedMoment[]
+}
+
+model SavedMoment {
+  id        String   @id @default(uuid())
+  userId    String
+  videoId   String   // The video URL or ID (e.g., extracted YouTube ID)
+  label     String
+  startTime Float
+  endTime   Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Admin {

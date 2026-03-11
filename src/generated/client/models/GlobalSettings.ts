@@ -43,8 +43,8 @@ export type GlobalSettingsMinAggregateOutputType = {
   minClipDuration: number | null
   maxClipDuration: number | null
   maxClipsPerVideo: number | null
-  maintenanceMode: boolean | null
   updatedAt: Date | null
+  maintenanceMode: boolean | null
 }
 
 export type GlobalSettingsMaxAggregateOutputType = {
@@ -52,8 +52,8 @@ export type GlobalSettingsMaxAggregateOutputType = {
   minClipDuration: number | null
   maxClipDuration: number | null
   maxClipsPerVideo: number | null
-  maintenanceMode: boolean | null
   updatedAt: Date | null
+  maintenanceMode: boolean | null
 }
 
 export type GlobalSettingsCountAggregateOutputType = {
@@ -61,8 +61,8 @@ export type GlobalSettingsCountAggregateOutputType = {
   minClipDuration: number
   maxClipDuration: number
   maxClipsPerVideo: number
-  maintenanceMode: number
   updatedAt: number
+  maintenanceMode: number
   _all: number
 }
 
@@ -84,8 +84,8 @@ export type GlobalSettingsMinAggregateInputType = {
   minClipDuration?: true
   maxClipDuration?: true
   maxClipsPerVideo?: true
-  maintenanceMode?: true
   updatedAt?: true
+  maintenanceMode?: true
 }
 
 export type GlobalSettingsMaxAggregateInputType = {
@@ -93,8 +93,8 @@ export type GlobalSettingsMaxAggregateInputType = {
   minClipDuration?: true
   maxClipDuration?: true
   maxClipsPerVideo?: true
-  maintenanceMode?: true
   updatedAt?: true
+  maintenanceMode?: true
 }
 
 export type GlobalSettingsCountAggregateInputType = {
@@ -102,8 +102,8 @@ export type GlobalSettingsCountAggregateInputType = {
   minClipDuration?: true
   maxClipDuration?: true
   maxClipsPerVideo?: true
-  maintenanceMode?: true
   updatedAt?: true
+  maintenanceMode?: true
   _all?: true
 }
 
@@ -198,8 +198,8 @@ export type GlobalSettingsGroupByOutputType = {
   minClipDuration: number
   maxClipDuration: number
   maxClipsPerVideo: number
-  maintenanceMode: boolean
   updatedAt: Date
+  maintenanceMode: boolean
   _count: GlobalSettingsCountAggregateOutputType | null
   _avg: GlobalSettingsAvgAggregateOutputType | null
   _sum: GlobalSettingsSumAggregateOutputType | null
@@ -230,8 +230,8 @@ export type GlobalSettingsWhereInput = {
   minClipDuration?: Prisma.FloatFilter<"GlobalSettings"> | number
   maxClipDuration?: Prisma.FloatFilter<"GlobalSettings"> | number
   maxClipsPerVideo?: Prisma.IntFilter<"GlobalSettings"> | number
-  maintenanceMode?: Prisma.BoolFilter<"GlobalSettings"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"GlobalSettings"> | Date | string
+  maintenanceMode?: Prisma.BoolFilter<"GlobalSettings"> | boolean
 }
 
 export type GlobalSettingsOrderByWithRelationInput = {
@@ -239,8 +239,8 @@ export type GlobalSettingsOrderByWithRelationInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
-  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
 }
 
 export type GlobalSettingsWhereUniqueInput = Prisma.AtLeast<{
@@ -251,8 +251,8 @@ export type GlobalSettingsWhereUniqueInput = Prisma.AtLeast<{
   minClipDuration?: Prisma.FloatFilter<"GlobalSettings"> | number
   maxClipDuration?: Prisma.FloatFilter<"GlobalSettings"> | number
   maxClipsPerVideo?: Prisma.IntFilter<"GlobalSettings"> | number
-  maintenanceMode?: Prisma.BoolFilter<"GlobalSettings"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"GlobalSettings"> | Date | string
+  maintenanceMode?: Prisma.BoolFilter<"GlobalSettings"> | boolean
 }, "id">
 
 export type GlobalSettingsOrderByWithAggregationInput = {
@@ -260,8 +260,8 @@ export type GlobalSettingsOrderByWithAggregationInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
-  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
   _count?: Prisma.GlobalSettingsCountOrderByAggregateInput
   _avg?: Prisma.GlobalSettingsAvgOrderByAggregateInput
   _max?: Prisma.GlobalSettingsMaxOrderByAggregateInput
@@ -277,8 +277,8 @@ export type GlobalSettingsScalarWhereWithAggregatesInput = {
   minClipDuration?: Prisma.FloatWithAggregatesFilter<"GlobalSettings"> | number
   maxClipDuration?: Prisma.FloatWithAggregatesFilter<"GlobalSettings"> | number
   maxClipsPerVideo?: Prisma.IntWithAggregatesFilter<"GlobalSettings"> | number
-  maintenanceMode?: Prisma.BoolWithAggregatesFilter<"GlobalSettings"> | boolean
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"GlobalSettings"> | Date | string
+  maintenanceMode?: Prisma.BoolWithAggregatesFilter<"GlobalSettings"> | boolean
 }
 
 export type GlobalSettingsCreateInput = {
@@ -286,8 +286,8 @@ export type GlobalSettingsCreateInput = {
   minClipDuration?: number
   maxClipDuration?: number
   maxClipsPerVideo?: number
-  maintenanceMode?: boolean
   updatedAt?: Date | string
+  maintenanceMode?: boolean
 }
 
 export type GlobalSettingsUncheckedCreateInput = {
@@ -295,8 +295,8 @@ export type GlobalSettingsUncheckedCreateInput = {
   minClipDuration?: number
   maxClipDuration?: number
   maxClipsPerVideo?: number
-  maintenanceMode?: boolean
   updatedAt?: Date | string
+  maintenanceMode?: boolean
 }
 
 export type GlobalSettingsUpdateInput = {
@@ -304,8 +304,8 @@ export type GlobalSettingsUpdateInput = {
   minClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipsPerVideo?: Prisma.IntFieldUpdateOperationsInput | number
-  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type GlobalSettingsUncheckedUpdateInput = {
@@ -313,8 +313,8 @@ export type GlobalSettingsUncheckedUpdateInput = {
   minClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipsPerVideo?: Prisma.IntFieldUpdateOperationsInput | number
-  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type GlobalSettingsCreateManyInput = {
@@ -322,8 +322,8 @@ export type GlobalSettingsCreateManyInput = {
   minClipDuration?: number
   maxClipDuration?: number
   maxClipsPerVideo?: number
-  maintenanceMode?: boolean
   updatedAt?: Date | string
+  maintenanceMode?: boolean
 }
 
 export type GlobalSettingsUpdateManyMutationInput = {
@@ -331,8 +331,8 @@ export type GlobalSettingsUpdateManyMutationInput = {
   minClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipsPerVideo?: Prisma.IntFieldUpdateOperationsInput | number
-  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type GlobalSettingsUncheckedUpdateManyInput = {
@@ -340,8 +340,8 @@ export type GlobalSettingsUncheckedUpdateManyInput = {
   minClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipDuration?: Prisma.FloatFieldUpdateOperationsInput | number
   maxClipsPerVideo?: Prisma.IntFieldUpdateOperationsInput | number
-  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  maintenanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type GlobalSettingsCountOrderByAggregateInput = {
@@ -349,8 +349,8 @@ export type GlobalSettingsCountOrderByAggregateInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
-  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
 }
 
 export type GlobalSettingsAvgOrderByAggregateInput = {
@@ -364,8 +364,8 @@ export type GlobalSettingsMaxOrderByAggregateInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
-  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
 }
 
 export type GlobalSettingsMinOrderByAggregateInput = {
@@ -373,22 +373,14 @@ export type GlobalSettingsMinOrderByAggregateInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
-  maintenanceMode?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  maintenanceMode?: Prisma.SortOrder
 }
 
 export type GlobalSettingsSumOrderByAggregateInput = {
   minClipDuration?: Prisma.SortOrder
   maxClipDuration?: Prisma.SortOrder
   maxClipsPerVideo?: Prisma.SortOrder
-}
-
-export type FloatFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -410,8 +402,8 @@ export type GlobalSettingsSelect<ExtArgs extends runtime.Types.Extensions.Intern
   minClipDuration?: boolean
   maxClipDuration?: boolean
   maxClipsPerVideo?: boolean
-  maintenanceMode?: boolean
   updatedAt?: boolean
+  maintenanceMode?: boolean
 }, ExtArgs["result"]["globalSettings"]>
 
 export type GlobalSettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -419,8 +411,8 @@ export type GlobalSettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   minClipDuration?: boolean
   maxClipDuration?: boolean
   maxClipsPerVideo?: boolean
-  maintenanceMode?: boolean
   updatedAt?: boolean
+  maintenanceMode?: boolean
 }, ExtArgs["result"]["globalSettings"]>
 
 export type GlobalSettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -428,8 +420,8 @@ export type GlobalSettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   minClipDuration?: boolean
   maxClipDuration?: boolean
   maxClipsPerVideo?: boolean
-  maintenanceMode?: boolean
   updatedAt?: boolean
+  maintenanceMode?: boolean
 }, ExtArgs["result"]["globalSettings"]>
 
 export type GlobalSettingsSelectScalar = {
@@ -437,11 +429,11 @@ export type GlobalSettingsSelectScalar = {
   minClipDuration?: boolean
   maxClipDuration?: boolean
   maxClipsPerVideo?: boolean
-  maintenanceMode?: boolean
   updatedAt?: boolean
+  maintenanceMode?: boolean
 }
 
-export type GlobalSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "minClipDuration" | "maxClipDuration" | "maxClipsPerVideo" | "maintenanceMode" | "updatedAt", ExtArgs["result"]["globalSettings"]>
+export type GlobalSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "minClipDuration" | "maxClipDuration" | "maxClipsPerVideo" | "updatedAt" | "maintenanceMode", ExtArgs["result"]["globalSettings"]>
 
 export type $GlobalSettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "GlobalSettings"
@@ -451,8 +443,8 @@ export type $GlobalSettingsPayload<ExtArgs extends runtime.Types.Extensions.Inte
     minClipDuration: number
     maxClipDuration: number
     maxClipsPerVideo: number
-    maintenanceMode: boolean
     updatedAt: Date
+    maintenanceMode: boolean
   }, ExtArgs["result"]["globalSettings"]>
   composites: {}
 }
@@ -880,8 +872,8 @@ export interface GlobalSettingsFieldRefs {
   readonly minClipDuration: Prisma.FieldRef<"GlobalSettings", 'Float'>
   readonly maxClipDuration: Prisma.FieldRef<"GlobalSettings", 'Float'>
   readonly maxClipsPerVideo: Prisma.FieldRef<"GlobalSettings", 'Int'>
-  readonly maintenanceMode: Prisma.FieldRef<"GlobalSettings", 'Boolean'>
   readonly updatedAt: Prisma.FieldRef<"GlobalSettings", 'DateTime'>
+  readonly maintenanceMode: Prisma.FieldRef<"GlobalSettings", 'Boolean'>
 }
     
 

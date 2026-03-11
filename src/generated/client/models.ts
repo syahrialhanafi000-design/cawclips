@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/AppUser'
+export type * from './models/SavedMoment'
 export type * from './models/Admin'
 export type * from './models/GlobalSettings'
 export type * from './models/VideoClipCount'

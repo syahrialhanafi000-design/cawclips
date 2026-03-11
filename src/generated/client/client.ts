@@ -45,6 +45,11 @@ export { Prisma }
  */
 export type AppUser = Prisma.AppUserModel
 /**
+ * Model SavedMoment
+ * 
+ */
+export type SavedMoment = Prisma.SavedMomentModel
+/**
  * Model Admin
  * 
  */
