@@ -1,5 +1,0 @@
-app/editor/page.tsx(15,44): error TS2345: Argument of type '<B extends Breakpoint = string>(props: ResponsiveGridLayoutProps<B>) => ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to parameter of type 'GridLayoutProps'.
-app/editor/page.tsx(383,18): error TS2552: Cannot find name 'useRouter'. Did you mean 'router'?
-app/editor/page.tsx(1233,14): error TS2604: JSX element type 'ResponsiveGridLayout' does not have any construct or call signatures.
-app/editor/page.tsx(1233,14): error TS2786: 'ResponsiveGridLayout' cannot be used as a JSX component.
-  Its type 'ReactElement<unknown, string | JSXElementConstructor<any>>' is not a valid JSX element type.
