@@ -14,6 +14,7 @@ import 'react-resizable/css/styles.css';
 
 import WelcomeModal from '../../components/WelcomeModal';
 import Tooltip from '../../components/Tooltip';
+import ClosureBanner from '../../components/ClosureBanner';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -1060,7 +1061,9 @@ export default function VideoEditorPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-full lg:max-w-7xl w-full mx-auto px-4 py-6 overflow-x-hidden">
+      <main className="flex-1 max-w-full lg:max-w-7xl w-full mx-auto px-4 py-6 overflow-x-hidden space-y-6">
+        <ClosureBanner />
+        
         <ResponsiveGridLayout
           className={`layout ${isLayoutLocked ? 'layout-locked' : ''}`}
           layouts={layouts}
