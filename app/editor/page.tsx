@@ -385,7 +385,7 @@ export default function VideoEditorPage() {
         console.error('Failed to fetch clip count:', err);
       }
     }
-    
+
     async function fetchMoments() {
       try {
         const videoId = extractVideoId(activeUrl);
@@ -638,17 +638,19 @@ export default function VideoEditorPage() {
           videoId,
           label: momentLabel || `Momen ${toHMS(startTime)} - ${toHMS(endTime)}`,
           startTime,
-          endTime
-        })
+          endTime,
+        }),
       });
       if (res.ok) {
         const data = await res.json();
-        setSavedMoments(prev => [...prev, data.moment]);
+        setSavedMoments((prev) => [...prev, data.moment]);
         setMomentLabel('');
         // Show success briefly
         const successMsg = 'Momen berhasil disimpan!';
         setStatusMessage(successMsg);
-        setTimeout(() => { if (statusMessage === successMsg) setStatusMessage(''); }, 3000);
+        setTimeout(() => {
+          if (statusMessage === successMsg) setStatusMessage('');
+        }, 3000);
       } else {
         throw new Error('Gagal menyimpan momen');
       }
@@ -665,7 +667,7 @@ export default function VideoEditorPage() {
     try {
       const res = await fetch(`/api/moments/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setSavedMoments(prev => prev.filter(m => m.id !== id));
+        setSavedMoments((prev) => prev.filter((m) => m.id !== id));
       }
     } catch (err) {
       console.error('Failed to delete moment:', err);
@@ -939,7 +941,7 @@ export default function VideoEditorPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 flex flex-col gap-5">
+      <main className="flex-1 max-w-full lg:max-w-6xl w-full mx-auto px-4 py-6 flex flex-col gap-5 overflow-x-hidden">
         <div className={`relative w-full rounded-2xl overflow-hidden shadow-2xl shadow-black/60 transition-colors duration-300 border-2 ${isPreviewing ? 'border-amber-500/50' : 'border-white/8'}`} style={{ background: '#05200f' }}>
           <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
             {activeUrl ? (
@@ -1078,19 +1080,21 @@ export default function VideoEditorPage() {
               </div>
             </div>
 
-            <div id="tour-zoom-slider" className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 w-full sm:w-auto overflow-hidden">
-              <Tooltip content="Atur tingkat detail tampilan timeline" position="left" className="shrink-0">
-                <div className="flex items-center gap-2">
-                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold hidden xsm:inline">Skala</span>
-                </div>
-              </Tooltip>
-              <Tooltip content="Geser untuk Zoom In (Ke Kanan) atau Zoom Out (Ke Kiri)" position="top" className="flex-1">
+            <div id="tour-zoom-slider" className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 w-full sm:w-auto overflow-hidden justify-between sm:justify-start">
+              <div className="flex items-center gap-2">
+                <Tooltip content="Atur tingkat detail tampilan timeline" position="left" className="shrink-0">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold hidden xsm:inline sm:hidden lg:inline">Skala</span>
+                  </div>
+                </Tooltip>
+                <span className="text-[10px] font-mono text-teal-400 w-8 text-right shrink-0">{zoom}x</span>
+              </div>
+              <Tooltip content="Geser untuk Zoom In (Ke Kanan) atau Zoom Out (Ke Kiri)" position="top" className="flex-1 max-w-[150px] sm:max-w-none">
                 <input type="range" min="1" max="100" step="0.5" value={zoom} onChange={(e) => setZoom(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500" />
               </Tooltip>
-              <span className="text-[10px] font-mono text-teal-400 w-8 text-right shrink-0">{zoom}x</span>
             </div>
           </div>
           <div id="tour-timeline">
@@ -1128,32 +1132,31 @@ export default function VideoEditorPage() {
           className={`rounded-2xl border ${clipDuration > globalSettings.maxClipDuration ? 'border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'border-white/8'} bg-[#0a1628] p-5 flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-500 transition-all`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
+              <div className="w-8 h-8 hidden sm:flex rounded-lg bg-teal-500/20 items-center justify-center border border-teal-500/30">
                 <svg className="w-4 h-4 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
               </div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest">Pemilih Momen</h3>
+              <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-widest">Pemilih Momen</h3>
             </div>
             <div className="flex items-center gap-3">
-              <div className="px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20">
-                <span className="text-xs font-mono text-teal-400 font-bold">{toHMS(currentTime, true)}</span>
+              <div className="px-3 py-1  rounded-full bg-teal-500/10 border border-teal-500/20">
+                <span className="text-[10px] sm:text-sm font-mono text-teal-400 font-bold">{toHMS(currentTime, true)}</span>
               </div>
               <div className="w-px h-6 bg-white/10" />
-              <button 
+              <button
                 onClick={() => setShowMomentsPanel(!showMomentsPanel)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${showMomentsPanel ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}>
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                 </svg>
-                Momen Tersimpan ({savedMoments.length})
+                <span className="hidden sm:inline">Momen Tersimpan</span> <span className="hidden sm:inline">({savedMoments.length})</span>
               </button>
             </div>
           </div>
 
           <div className="flex flex-col gap-6">
-            
             {/* Saved Moments Panel */}
             {showMomentsPanel && (
               <div className="bg-black/30 w-full rounded-xl border border-indigo-500/20 overflow-hidden shrink-0 animate-in slide-in-from-top-2 duration-300">
@@ -1170,16 +1173,14 @@ export default function VideoEditorPage() {
                     </svg>
                   </button>
                 </div>
-                
+
                 <div className="p-4 max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-2">
                   {savedMoments.length === 0 ? (
-                    <div className="text-center py-6 text-slate-500 text-sm">
-                      Belum ada momen yang disimpan untuk video ini.
-                    </div>
+                    <div className="text-center py-6 text-slate-500 text-sm">Belum ada momen yang disimpan untuk video ini.</div>
                   ) : (
-                    savedMoments.map(moment => (
-                      <div 
-                        key={moment.id} 
+                    savedMoments.map((moment) => (
+                      <div
+                        key={moment.id}
                         onClick={() => {
                           setStartTime(moment.startTime);
                           setEndTime(moment.endTime);
@@ -1191,19 +1192,14 @@ export default function VideoEditorPage() {
                             setCurrentTime(moment.startTime);
                           }
                         }}
-                        className="group flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/30 cursor-pointer transition-all"
-                      >
+                        className="group flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/30 cursor-pointer transition-all">
                         <div className="flex flex-col gap-1">
                           <span className="text-sm font-semibold text-white group-hover:text-indigo-300 transition-colors">{moment.label}</span>
                           <span className="text-xs font-mono text-slate-400">
                             {toHMS(moment.startTime)} - {toHMS(moment.endTime)} ({toHMS(moment.endTime - moment.startTime)})
                           </span>
                         </div>
-                        <button 
-                          onClick={(e) => handleDeleteMoment(moment.id, e)}
-                          className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-500/20 rounded-lg transition-all"
-                          title="Hapus Momen"
-                        >
+                        <button onClick={(e) => handleDeleteMoment(moment.id, e)} className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-500/20 rounded-lg transition-all" title="Hapus Momen">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -1257,7 +1253,7 @@ export default function VideoEditorPage() {
                       onClick={() => setStartTime(currentTime)}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-teal-500/50 transition-all group">
                       <div className="w-2 h-2 rounded-full bg-teal-500 group-hover:animate-pulse" />
-                      <span className="text-xs font-bold text-white">Mulai Sini</span>
+                      <span className="text-[8px] sm:text-sm font-bold text-white">Mulai Sini</span>
                     </button>
                   </Tooltip>
                   <Tooltip content="Set waktu akhir pada posisi saat ini">
@@ -1265,34 +1261,35 @@ export default function VideoEditorPage() {
                       onClick={() => setEndTime(currentTime)}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-emerald-500/50 transition-all group">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 group-hover:animate-pulse" />
-                      <span className="text-xs font-bold text-white">Selesai Sini</span>
+                      <span className="text-[8px] sm:text-sm font-bold text-white">Selesai Sini</span>
                     </button>
                   </Tooltip>
                 </div>
-                
+
                 {/* Save Moment Inline Feature */}
                 <div className="flex items-center gap-2 mt-2">
-                   <div className="relative flex-1">
-                      <input 
-                        type="text" 
-                        value={momentLabel}
-                        onChange={(e) => setMomentLabel(e.target.value)}
-                        placeholder="Nama momen (opsional)..."
-                        className="w-full h-9 rounded-lg px-3 text-xs bg-black/40 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:bg-white/5 transition-all"
-                      />
-                   </div>
-                   <button 
-                     onClick={handleSaveMoment}
-                     disabled={isSavingMoment || duration === 0}
-                     className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold transition-colors flex items-center gap-2 shrink-0"
-                   >
-                     {isSavingMoment ? <Spinner className="w-3 h-3 text-white" /> : (
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={momentLabel}
+                      onChange={(e) => setMomentLabel(e.target.value)}
+                      placeholder="Nama momen (opsional)..."
+                      className="w-full h-9 rounded-lg px-3 text-xs bg-black/40 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:bg-white/5 transition-all"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSaveMoment}
+                    disabled={isSavingMoment || duration === 0}
+                    className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold transition-colors flex items-center gap-2 shrink-0">
+                    {isSavingMoment ? (
+                      <Spinner className="w-3 h-3 text-white" />
+                    ) : (
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                       </svg>
-                     )}
-                     <span>Simpan</span>
-                   </button>
+                    )}
+                    <span>Simpan</span>
+                  </button>
                 </div>
               </div>
 
