@@ -96,3 +96,49 @@ body {
 .perspective-1000 {
   perspective: 1000px;
 }
+
+/* React Grid Layout - Premium Resize Handles */
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+  z-index: 10;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.react-resizable-handle::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #14b8a6;
+  border-bottom: 2px solid #14b8a6;
+  border-radius: 1px;
+}
+
+.react-resizable-handle:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.react-grid-item.react-grid-placeholder {
+  background: rgba(20, 184, 166, 0.1) !important;
+  border-radius: 1rem !important;
+  border: 1px dashed rgba(20, 184, 166, 0.4) !important;
+  opacity: 0.5 !important;
+}
+
+.react-grid-item.resizing {
+  z-index: 100;
+}
+
+.drag-handle:active {
+  cursor: grabbing !important;
+}
+

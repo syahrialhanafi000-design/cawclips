@@ -6,12 +6,28 @@ import { Rnd } from 'react-rnd';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { Responsive, WidthProvider, type Layout, type ResponsiveLayouts as Layouts } from 'react-grid-layout/legacy';
+
+// CSS for react-grid-layout
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+
 import WelcomeModal from '../../components/WelcomeModal';
 import Tooltip from '../../components/Tooltip';
 
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
+interface VideoPlayer extends Partial<HTMLVideoElement> {
+  seekTo?(amount: number, type?: 'seconds' | 'fraction'): void;
+  getCurrentTime?(): number;
+  getDuration?(): number;
+  getInternalPlayer?(key?: string): unknown;
+}
+
+import type { ReactPlayerProps } from 'react-player/types';
+
 // ReactPlayer is loaded dynamically to avoid SSR issues
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as React.ComponentType<any>;
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as React.ComponentType<ReactPlayerProps>;
 
 type JobStatus = 'idle' | 'loading' | 'processing' | 'finished' | 'error';
 type OutputMode = 'video' | 'super_photo' | 'burst';
@@ -65,9 +81,10 @@ interface TimelineProps {
   onStartChange: (v: number) => void;
   onEndChange: (v: number) => void;
   onSeek: (v: number) => void;
+  onScrubbingChange?: (isScrubbing: boolean) => void;
 }
 
-function Timeline({ duration, start, end, currentTime, zoom, onStartChange, onEndChange, onSeek }: TimelineProps) {
+function Timeline({ duration, start, end, currentTime, zoom, onStartChange, onEndChange, onSeek, onScrubbingChange }: TimelineProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef<'start' | 'end' | 'range' | null>(null);
@@ -94,11 +111,12 @@ function Timeline({ duration, start, end, currentTime, zoom, onStartChange, onEn
     (e: React.PointerEvent, handle: 'start' | 'end' | 'range') => {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       dragging.current = handle;
+      onScrubbingChange?.(true);
       if (handle === 'range') {
         dragOffset.current = posToSec(e.clientX) - start;
       }
     },
-    [posToSec, start],
+    [posToSec, start, onScrubbingChange],
   );
 
   const onPointerMove = useCallback(
@@ -122,8 +140,11 @@ function Timeline({ duration, start, end, currentTime, zoom, onStartChange, onEn
   );
 
   const onPointerUp = useCallback(() => {
-    dragging.current = null;
-  }, []);
+    if (dragging.current) {
+      dragging.current = null;
+      onScrubbingChange?.(false);
+    }
+  }, [onScrubbingChange]);
 
   const onTrackClick = useCallback(
     (e: React.MouseEvent) => {
@@ -264,11 +285,69 @@ function translateError(msg: string): string {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// Grid Layout Config
+// ────────────────────────────────────────────────────────────────────────────
+const defaultLayouts: Layouts = {
+  lg: [
+    { i: 'player', x: 0, y: 0, w: 12, h: 11, minW: 1, minH: 1 },
+    { i: 'timeline', x: 0, y: 11, w: 12, h: 4, minW: 1, minH: 1 },
+    { i: 'moments', x: 0, y: 15, w: 6, h: 10, minW: 1, minH: 1 },
+    { i: 'controls', x: 6, y: 15, w: 6, h: 10, minW: 1, minH: 1 },
+  ],
+  md: [
+    { i: 'player', x: 0, y: 0, w: 10, h: 11, minW: 1, minH: 1 },
+    { i: 'timeline', x: 0, y: 11, w: 10, h: 4, minW: 1, minH: 1 },
+    { i: 'moments', x: 0, y: 15, w: 10, h: 10, minW: 1, minH: 1 },
+    { i: 'controls', x: 0, y: 25, w: 10, h: 10, minW: 1, minH: 1 },
+  ],
+  sm: [
+    { i: 'player', x: 0, y: 0, w: 6, h: 11, minW: 1, minH: 1 },
+    { i: 'timeline', x: 0, y: 11, w: 6, h: 4, minW: 1, minH: 1 },
+    { i: 'moments', x: 0, y: 15, w: 6, h: 10, minW: 1, minH: 1 },
+    { i: 'controls', x: 0, y: 25, w: 6, h: 10, minW: 1, minH: 1 },
+  ],
+  xs: [
+    { i: 'player', x: 0, y: 0, w: 4, h: 10, minW: 1, minH: 1 },
+    { i: 'timeline', x: 0, y: 10, w: 4, h: 4, minW: 1, minH: 1 },
+    { i: 'moments', x: 0, y: 14, w: 4, h: 10, minW: 1, minH: 1 },
+    { i: 'controls', x: 0, y: 24, w: 4, h: 10, minW: 1, minH: 1 },
+  ],
+  xxs: [
+    { i: 'player', x: 0, y: 0, w: 2, h: 10, minW: 1, minH: 1 },
+    { i: 'timeline', x: 0, y: 10, w: 2, h: 4, minW: 1, minH: 1 },
+    { i: 'moments', x: 0, y: 14, w: 2, h: 10, minW: 1, minH: 1 },
+    { i: 'controls', x: 0, y: 24, w: 2, h: 10, minW: 1, minH: 1 },
+  ],
+};
+
+// ────────────────────────────────────────────────────────────────────────────
 // Main Page Component
 // ────────────────────────────────────────────────────────────────────────────
 export default function VideoEditorPage() {
   const router = useRouter();
   const [authLoading, setAuthLoading] = useState(true);
+
+  // Layout states
+  const [layouts, setLayouts] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('caw_editor_layout');
+      return saved ? JSON.parse(saved) : defaultLayouts;
+    }
+    return defaultLayouts;
+  });
+  const [isLayoutLocked, setIsLayoutLocked] = useState(false);
+
+  const onLayoutChange = (currentLayout: Layout, allLayouts: Layouts) => {
+    setLayouts(allLayouts);
+    localStorage.setItem('caw_editor_layout', JSON.stringify(allLayouts));
+  };
+
+  const resetLayout = () => {
+    if (window.confirm('Reset susunan layout ke posisi default?')) {
+      setLayouts(defaultLayouts);
+      localStorage.removeItem('caw_editor_layout');
+    }
+  };
 
   useEffect(() => {
     async function checkAuth() {
@@ -306,6 +385,7 @@ export default function VideoEditorPage() {
 
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [clipDuration, setClipDuration] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -369,6 +449,16 @@ export default function VideoEditorPage() {
     fetchConfig();
   }, []);
 
+  const handleTimeUpdate = useCallback(
+    (e: React.SyntheticEvent<HTMLVideoElement>) => {
+      const video = e.currentTarget;
+      if (!isPreviewing && !isScrubbing) {
+        setCurrentTime(video.currentTime);
+      }
+    },
+    [isPreviewing, isScrubbing]
+  );
+
   useEffect(() => {
     if (!activeUrl) return;
     async function fetchClipCount() {
@@ -419,10 +509,9 @@ export default function VideoEditorPage() {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const previewStopRef = useRef<(() => void) | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const playerRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [playerInstance, setPlayerInstance] = useState<any>(null);
+  // Refs & State
+  const playerRef = useRef<VideoPlayer>(null);
+  const [playerInstance, setPlayerInstance] = useState<VideoPlayer | null>(null);
 
   // Fallback timer to ensure playhead moves even if onProgress is slow/fails
   useEffect(() => {
@@ -443,7 +532,11 @@ export default function VideoEditorPage() {
           setIsPreviewing(false);
 
           // Use the robust seek logic
-          const target = playerInstance.seekTo ? playerInstance : playerInstance.getInternalPlayer?.() || playerInstance;
+          let target: VideoPlayer = playerInstance;
+          if (!playerInstance.seekTo && playerInstance.getInternalPlayer) {
+            const internal = playerInstance.getInternalPlayer();
+            if (internal) target = internal as VideoPlayer;
+          }
           if (typeof target.seekTo === 'function') {
             target.seekTo(startTime, 'seconds');
           } else if (target.currentTime !== undefined) {
@@ -719,7 +812,7 @@ export default function VideoEditorPage() {
         formData.append('interval', burstInterval.toString());
       }
 
-      if (mode === 'super_photo' && enableCrop) {
+      if (enableCrop) {
         formData.append('crop_w', `iw*${Math.max(0.01, crop.width / 100).toFixed(4)}`);
         formData.append('crop_h', `ih*${Math.max(0.01, crop.height / 100).toFixed(4)}`);
         formData.append('crop_x', `iw*${Math.max(0, crop.x / 100).toFixed(4)}`);
@@ -833,7 +926,7 @@ export default function VideoEditorPage() {
       if (currentTime >= endTime - 0.1 || currentTime < startTime) {
         const player = playerInstance || playerRef.current;
         if (player) {
-          const target = player.seekTo ? player : player.getInternalPlayer?.() || player;
+          const target = (player.seekTo ? player : player.getInternalPlayer?.() || player) as VideoPlayer;
           if (typeof target.seekTo === 'function') {
             target.seekTo(startTime, 'seconds');
           } else if (target.currentTime !== undefined) {
@@ -938,298 +1031,237 @@ export default function VideoEditorPage() {
               Muat
             </button>
           </Tooltip>
+
+          <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block" />
+
+          <div className="flex items-center gap-2">
+            <Tooltip content={isLayoutLocked ? "Buka kuncian untuk mengatur posisi panel" : "Kunci posisi panel"} position="bottom">
+              <button
+                onClick={() => setIsLayoutLocked(!isLayoutLocked)}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all border ${isLayoutLocked ? 'bg-white/5 border-white/10 text-slate-400 hover:text-white' : 'bg-amber-500/20 border-amber-500/40 text-amber-400'}`}
+              >
+                {isLayoutLocked ? (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                ) : (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+                )}
+              </button>
+            </Tooltip>
+
+            <Tooltip content="Reset susunan panel" position="bottom">
+              <button
+                onClick={resetLayout}
+                className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 text-slate-400 hover:text-rose-400 hover:border-rose-500/30 transition-all"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-full lg:max-w-6xl w-full mx-auto px-4 py-6 flex flex-col gap-5 overflow-x-hidden">
-        <div className={`relative w-full rounded-2xl overflow-hidden shadow-2xl shadow-black/60 transition-colors duration-300 border-2 ${isPreviewing ? 'border-amber-500/50' : 'border-white/8'}`} style={{ background: '#05200f' }}>
-          <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
-            {activeUrl ? (
-              <div ref={playerContainerRef} className="absolute inset-0">
-                <ReactPlayer
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  ref={(player: any) => {
-                    playerRef.current = player;
-                    if (player && !playerInstance) {
-                      setPlayerInstance(player);
-                      // Extract internal video element if possible
-                      if (typeof player.getInternalPlayer === 'function') {
-                        const internal = player.getInternalPlayer();
-                        if (internal instanceof HTMLVideoElement) {
-                          videoRef.current = internal;
-                        }
-                      }
-                    }
-                  }}
-                  src={activeUrl}
-                  width="100%"
-                  height="100%"
-                  controls
-                  playing={isPlaying || isPreviewing}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onProgress={(state: any) => {
-                    const time = state.playedSeconds;
-                    if (typeof time === 'number' && isFinite(time)) {
-                      setCurrentTime(time);
-                    }
-                  }}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onDurationChange={(e: any) => {
-                    handleDuration(e.target.duration);
-                  }}
-                  onReady={() => {
-                    setPlayerReady(true);
-                    if (playerRef.current) setPlayerInstance(playerRef.current);
-                  }}
-                />
-
-                {/* Crop Overlay */}
-                {mode === 'super_photo' && enableCrop && playerSize.width > 0 && (
-                  <Rnd
-                    bounds="parent"
-                    size={{
-                      width: (crop.width / 100) * playerSize.width,
-                      height: (crop.height / 100) * playerSize.height,
-                    }}
-                    position={{
-                      x: (crop.x / 100) * playerSize.width,
-                      y: (crop.y / 100) * playerSize.height,
-                    }}
-                    onDragStop={(e, d) => {
-                      setCrop((prev) => ({
-                        ...prev,
-                        x: Math.max(0, (d.x / playerSize.width) * 100),
-                        y: Math.max(0, (d.y / playerSize.height) * 100),
-                      }));
-                    }}
-                    onResizeStop={(e, direction, ref, delta, position) => {
-                      setCrop({
-                        width: Math.max(0.01, (ref.offsetWidth / playerSize.width) * 100),
-                        height: Math.max(0.01, (ref.offsetHeight / playerSize.height) * 100),
-                        x: Math.max(0, (position.x / playerSize.width) * 100),
-                        y: Math.max(0, (position.y / playerSize.height) * 100),
-                      });
-                    }}
-                    className="z-50 border-2 border-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.3)] bg-teal-500/10 pointer-events-auto"
-                    style={{ cursor: 'move' }}>
-                    {/* 3x3 Grid */}
-                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                      <div className="absolute top-1/3 left-0 right-0 h-px bg-white/30" />
-                      <div className="absolute top-2/3 left-0 right-0 h-px bg-white/30" />
-                      <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/30" />
-                      <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/30" />
-                    </div>
-                  </Rnd>
-                )}
-              </div>
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500">
-                <svg className="w-14 h-14 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                  <line x1="8" y1="21" x2="16" y2="21" />
-                  <line x1="12" y1="17" x2="12" y2="21" />
-                </svg>
-                <p className="text-sm">
-                  Paste a video URL above and click <strong className="text-teal-500">Load</strong>
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 px-0.5">
-            <div className="flex items-center gap-5">
-              {((playerReady && duration > 0 && !isPreviewing) || showWelcome) && (
-                <button
-                  id="tour-play-pause"
-                  onClick={handleTogglePlay}
-                  className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm shrink-0 transition-colors border ${isPlaying ? 'border-teal-500/40 bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'}`}>
-                  {isPlaying ? (
-                    <>
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="6" y="4" width="4" height="16" />
-                        <rect x="14" y="4" width="4" height="16" />
-                      </svg>
-                      <span>Jeda</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <polygon points="5 3 19 12 5 21 5 3" />
-                      </svg>
-                      <span>Putar</span>
-                    </>
-                  )}
-                </button>
-              )}
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-semibold text-white/80">Timeline Range</span>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] text-slate-500 font-mono">Duration: {duration > 0 ? toHMS(duration) : '--:--:--'}</span>
-                  {activeUrl && (
-                    <Tooltip content="Batas pembuatan klip per video" position="right">
-                      <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded border transition-all duration-300 ${currentClipCount >= globalSettings.maxClipsPerVideo ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 font-bold shadow-[0_0_8px_rgba(244,63,94,0.1)]' : 'bg-white/5 border-white/10 text-slate-400'}`}>
-                        Clips: {currentClipCount} / {globalSettings.maxClipsPerVideo}
-                      </span>
-                    </Tooltip>
-                  )}
-                </div>
-              </div>
+      <main className="flex-1 max-w-full lg:max-w-7xl w-full mx-auto px-4 py-6 overflow-x-hidden">
+        <ResponsiveGridLayout
+          className="layout"
+          layouts={layouts}
+          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+          rowHeight={40}
+          draggableHandle=".drag-handle"
+          onLayoutChange={onLayoutChange}
+          isDraggable={!isLayoutLocked}
+          isResizable={!isLayoutLocked}
+          margin={[16, 16]}
+        >
+          {/* Widget 1: Video Player */}
+          <div key="player" className="bg-[#0a1628] rounded-2xl border border-white/8 overflow-hidden flex flex-col shadow-2xl">
+            <div className="drag-handle h-8 bg-black/40 border-b border-white/5 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between">
+               <div className="flex items-center gap-2">
+                 <div className="flex gap-1">
+                   <div className="w-2 h-2 rounded-full bg-rose-500/50" />
+                   <div className="w-2 h-2 rounded-full bg-amber-500/50" />
+                   <div className="w-2 h-2 rounded-full bg-emerald-500/50" />
+                 </div>
+                 <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Video Player</span>
+               </div>
+               {!isLayoutLocked && <div className="w-4 h-4 text-slate-500"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7l5-5 5 5M7 17l5 5 5-5" /></svg></div>}
             </div>
-
-            <div id="tour-zoom-slider" className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 w-full sm:w-auto overflow-hidden justify-between sm:justify-start">
-              <div className="flex items-center gap-2">
-                <Tooltip content="Atur tingkat detail tampilan timeline" position="left" className="shrink-0">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                    </svg>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold hidden xsm:inline sm:hidden lg:inline">Skala</span>
-                  </div>
-                </Tooltip>
-                <span className="text-[10px] font-mono text-teal-400 w-8 text-right shrink-0">{zoom}x</span>
-              </div>
-              <Tooltip content="Geser untuk Zoom In (Ke Kanan) atau Zoom Out (Ke Kiri)" position="top" className="flex-1 max-w-[150px] sm:max-w-none">
-                <input type="range" min="1" max="100" step="0.5" value={zoom} onChange={(e) => setZoom(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500" />
-              </Tooltip>
-            </div>
-          </div>
-          <div id="tour-timeline">
-            <Timeline
-              duration={duration}
-              start={startTime}
-              end={endTime}
-              currentTime={currentTime}
-              zoom={zoom}
-              onStartChange={setStartTime}
-              onEndChange={setEndTime}
-              onSeek={(time) => {
-                const player = playerInstance || playerRef.current;
-                if (player) {
-                  // Determine if it's the direct instance or wrapped by dynamic
-                  const target = player.seekTo ? player : player.getInternalPlayer?.() || player;
-
-                  if (typeof target.seekTo === 'function') {
-                    target.seekTo(time, 'seconds');
-                  } else if (target.currentTime !== undefined) {
-                    target.currentTime = time;
-                  }
-                  setCurrentTime(time);
-                }
-              }}
-            />
-          </div>
-          <div className="text-center px-4">
-            <span className="text-[9px] sm:text-[10px] text-slate-600 block leading-relaxed">Geser tuas untuk tentukan klip • Geser kotak pilihan untuk memindah rentang</span>
-          </div>
-        </div>
-
-        {/* Moment Picker Panel */}
-        <div
-          className={`rounded-2xl border ${clipDuration > globalSettings.maxClipDuration ? 'border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'border-white/8'} bg-[#0a1628] p-5 flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-500 transition-all`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 hidden sm:flex rounded-lg bg-teal-500/20 items-center justify-center border border-teal-500/30">
-                <svg className="w-4 h-4 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </div>
-              <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-widest">Pemilih Momen</h3>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="px-3 py-1  rounded-full bg-teal-500/10 border border-teal-500/20">
-                <span className="text-[10px] sm:text-sm font-mono text-teal-400 font-bold">{toHMS(currentTime, true)}</span>
-              </div>
-              <div className="w-px h-6 bg-white/10" />
-              <button
-                onClick={() => setShowMomentsPanel(!showMomentsPanel)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${showMomentsPanel ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}>
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                </svg>
-                <span className="hidden sm:inline">Momen Tersimpan</span> <span className="hidden sm:inline">({savedMoments.length})</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-6">
-            {/* Saved Moments Panel */}
-            {showMomentsPanel && (
-              <div className="bg-black/30 w-full rounded-xl border border-indigo-500/20 overflow-hidden shrink-0 animate-in slide-in-from-top-2 duration-300">
-                <div className="bg-indigo-500/10 px-4 py-3 border-b border-indigo-500/10 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                    </svg>
-                    <span className="text-sm font-semibold text-indigo-100">Daftar Momen Video Ini</span>
-                  </div>
-                  <button onClick={() => setShowMomentsPanel(false)} className="text-slate-400 hover:text-white">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="p-4 max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-2">
-                  {savedMoments.length === 0 ? (
-                    <div className="text-center py-6 text-slate-500 text-sm">Belum ada momen yang disimpan untuk video ini.</div>
-                  ) : (
-                    savedMoments.map((moment) => (
-                      <div
-                        key={moment.id}
-                        onClick={() => {
-                          setStartTime(moment.startTime);
-                          setEndTime(moment.endTime);
-                          const player = playerInstance || playerRef.current;
-                          if (player) {
-                            const target = player.seekTo ? player : player.getInternalPlayer?.() || player;
-                            if (typeof target.seekTo === 'function') target.seekTo(moment.startTime, 'seconds');
-                            else if (target.currentTime !== undefined) target.currentTime = moment.startTime;
-                            setCurrentTime(moment.startTime);
+            <div className="flex-1 relative p-1 bg-black">
+              <div className={`relative w-full h-full rounded-xl overflow-hidden shadow-2xl shadow-black/60 transition-colors duration-300 border-2 ${isPreviewing ? 'border-amber-500/50' : 'border-white/8'}`} style={{ background: '#05200f' }}>
+                <div className="relative w-full h-full">
+                  {activeUrl ? (
+                    <div ref={playerContainerRef} className="absolute inset-0">
+                      <ReactPlayer
+                        ref={(player: HTMLVideoElement | null) => {
+                          playerRef.current = player as VideoPlayer | null;
+                          if (player && !playerInstance) {
+                            setPlayerInstance(player as VideoPlayer | null);
+                            // Extract internal video element if possible
+                            if (typeof (player as VideoPlayer).getInternalPlayer === 'function') {
+                              const internal = (player as VideoPlayer).getInternalPlayer?.();
+                              if (internal instanceof HTMLVideoElement) {
+                                videoRef.current = internal;
+                              }
+                            } else {
+                              videoRef.current = player;
+                            }
                           }
                         }}
-                        className="group flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/30 cursor-pointer transition-all">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-sm font-semibold text-white group-hover:text-indigo-300 transition-colors">{moment.label}</span>
-                          <span className="text-xs font-mono text-slate-400">
-                            {toHMS(moment.startTime)} - {toHMS(moment.endTime)} ({toHMS(moment.endTime - moment.startTime)})
-                          </span>
-                        </div>
-                        <button onClick={(e) => handleDeleteMoment(moment.id, e)} className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-500/20 rounded-lg transition-all" title="Hapus Momen">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))
+                        src={activeUrl}
+                        width="100%"
+                        height="100%"
+                        controls
+                        playing={isPlaying || isPreviewing}
+                        onTimeUpdate={handleTimeUpdate}
+                        onPlay={() => setIsPlaying(true)}
+                        onPause={() => setIsPlaying(false)}
+                        onDurationChange={(e: React.SyntheticEvent<HTMLVideoElement>) => {
+                          handleDuration(e.currentTarget.duration);
+                        }}
+                        onReady={() => {
+                          setPlayerReady(true);
+                          if (playerRef.current) setPlayerInstance(playerRef.current);
+                        }}
+                      />
+
+                      {/* Crop Overlay */}
+                      {enableCrop && playerSize.width > 0 && (
+                        <Rnd
+                          bounds="parent"
+                          size={{
+                            width: (crop.width / 100) * playerSize.width,
+                            height: (crop.height / 100) * playerSize.height,
+                          }}
+                          position={{
+                            x: (crop.x / 100) * playerSize.width,
+                            y: (crop.y / 100) * playerSize.height,
+                          }}
+                          onDragStop={(e, d) => {
+                            setCrop((prev) => ({
+                              ...prev,
+                              x: Math.max(0, (d.x / playerSize.width) * 100),
+                              y: Math.max(0, (d.y / playerSize.height) * 100),
+                            }));
+                          }}
+                          onResizeStop={(e, direction, ref, delta, position) => {
+                            setCrop({
+                              width: Math.max(0.01, (ref.offsetWidth / playerSize.width) * 100),
+                              height: Math.max(0.01, (ref.offsetHeight / playerSize.height) * 100),
+                              x: Math.max(0, (position.x / playerSize.width) * 100),
+                              y: Math.max(0, (position.y / playerSize.height) * 100),
+                            });
+                          }}
+                          onDrag={ (e) => e.stopPropagation() }
+                          className="z-50 border-2 border-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.3)] bg-teal-500/10 pointer-events-auto"
+                          style={{ cursor: 'move' }}>
+                          {/* 3x3 Grid */}
+                          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                            <div className="absolute top-1/3 left-0 right-0 h-px bg-white/30" />
+                            <div className="absolute top-2/3 left-0 right-0 h-px bg-white/30" />
+                            <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/30" />
+                            <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/30" />
+                          </div>
+                        </Rnd>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500">
+                      <svg className="w-14 h-14 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                        <line x1="8" y1="21" x2="16" y2="21" />
+                        <line x1="12" y1="17" x2="12" y2="21" />
+                      </svg>
+                      <p className="text-sm">
+                        Paste a video URL above and click <strong className="text-teal-500">Load</strong>
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
-            )}
+            </div>
+          </div>
 
-            {/* Seek Slider */}
-            <Tooltip content="Geser kursor ini untuk mencari posisi waktu secara cepat" position="top" className="w-full">
-              <div className="flex flex-col gap-2 w-full">
-                <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Geser Cepat</span>
-                  <span className="text-[10px] text-slate-500 font-mono">{toHMS(duration)}</span>
+          {/* Widget 2: Timeline */}
+          <div key="timeline" className="bg-[#0a1628] rounded-2xl border border-white/8 overflow-hidden flex flex-col p-4 shadow-xl">
+             <div className="drag-handle absolute top-0 left-0 right-0 h-8 bg-black/20 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between z-10">
+               <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Timeline & Duration</span>
+               {!isLayoutLocked && <div className="w-4 h-4 text-slate-500"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7l5-5 5 5M7 17l5 5 5-5" /></svg></div>}
+            </div>
+            <div className="mt-6 flex flex-col gap-3 h-full justify-center">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 px-0.5">
+                <div className="flex items-center gap-5">
+                  {((playerReady && duration > 0 && !isPreviewing) || showWelcome) && (
+                    <button
+                      id="tour-play-pause"
+                      onClick={handleTogglePlay}
+                      className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm shrink-0 transition-colors border ${isPlaying ? 'border-teal-500/40 bg-teal-500/10 text-teal-400 hover:bg-teal-500/20' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'}`}>
+                      {isPlaying ? (
+                        <>
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="4" width="4" height="16" />
+                            <rect x="14" y="4" width="4" height="16" />
+                          </svg>
+                          <span>Jeda</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                          </svg>
+                          <span>Putar</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-semibold text-white/80">Timeline Range</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] text-slate-500 font-mono">Duration: {duration > 0 ? toHMS(duration) : '--:--:--'}</span>
+                      {activeUrl && (
+                        <Tooltip content="Batas pembuatan klip per video" position="right">
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded border transition-all duration-300 ${currentClipCount >= globalSettings.maxClipsPerVideo ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 font-bold shadow-[0_0_8px_rgba(244,63,94,0.1)]' : 'bg-white/5 border-white/10 text-slate-400'}`}>
+                            Clips: {currentClipCount} / {globalSettings.maxClipsPerVideo}
+                          </span>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max={Number.isFinite(duration) && duration > 0 ? duration : 100}
-                  step="0.1"
-                  value={Number.isFinite(currentTime) ? currentTime : 0}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    const time = isFinite(val) ? val : 0;
+
+                <div id="tour-zoom-slider" className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 w-full sm:w-auto overflow-hidden justify-between sm:justify-start">
+                  <div className="flex items-center gap-2">
+                    <Tooltip content="Atur tingkat detail tampilan timeline" position="left" className="shrink-0">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold hidden xsm:inline sm:hidden lg:inline">Skala</span>
+                      </div>
+                    </Tooltip>
+                    <span className="text-[10px] font-mono text-teal-400 w-8 text-right shrink-0">{zoom}x</span>
+                  </div>
+                  <Tooltip content="Geser untuk Zoom In (Ke Kanan) atau Zoom Out (Ke Kiri)" position="top" className="flex-1 max-w-[150px] sm:max-w-none">
+                    <input type="range" min="1" max="100" step="0.5" value={zoom} onChange={(e) => setZoom(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500" />
+                  </Tooltip>
+                </div>
+              </div>
+              <div id="tour-timeline">
+                <Timeline
+                  duration={duration}
+                  start={startTime}
+                  end={endTime}
+                  currentTime={currentTime}
+                  zoom={zoom}
+                  onStartChange={setStartTime}
+                  onEndChange={setEndTime}
+                  onScrubbingChange={setIsScrubbing}
+                  onSeek={(time) => {
                     const player = playerInstance || playerRef.current;
                     if (player) {
-                      const target = player.seekTo ? player : player.getInternalPlayer?.() || player;
+                      // Determine if it's the direct instance or wrapped by dynamic
+                      const target = (player.seekTo ? player : player.getInternalPlayer?.() || player) as VideoPlayer;
+
                       if (typeof target.seekTo === 'function') {
                         target.seekTo(time, 'seconds');
                       } else if (target.currentTime !== undefined) {
@@ -1238,271 +1270,322 @@ export default function VideoEditorPage() {
                       setCurrentTime(time);
                     }
                   }}
-                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-500"
                 />
               </div>
-            </Tooltip>
+              <div className="text-center px-4">
+                <span className="text-[9px] sm:text-[10px] text-slate-600 block leading-relaxed">Geser tuas untuk tentukan klip • Geser kotak pilihan untuk memindah rentang</span>
+              </div>
+            </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Manual Boundary Controls */}
-              <div className="flex flex-col gap-3">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tentukan Batas</span>
-                <div id="tour-point-controls" className="grid grid-cols-2 gap-2">
-                  <Tooltip content="Set waktu mulai pada posisi saat ini">
-                    <button
-                      onClick={() => setStartTime(currentTime)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-teal-500/50 transition-all group">
-                      <div className="w-2 h-2 rounded-full bg-teal-500 group-hover:animate-pulse" />
-                      <span className="text-[8px] sm:text-sm font-bold text-white">Mulai Sini</span>
-                    </button>
-                  </Tooltip>
-                  <Tooltip content="Set waktu akhir pada posisi saat ini">
-                    <button
-                      onClick={() => setEndTime(currentTime)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-emerald-500/50 transition-all group">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 group-hover:animate-pulse" />
-                      <span className="text-[8px] sm:text-sm font-bold text-white">Selesai Sini</span>
-                    </button>
-                  </Tooltip>
-                </div>
-
-                {/* Save Moment Inline Feature */}
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="text"
-                      value={momentLabel}
-                      onChange={(e) => setMomentLabel(e.target.value)}
-                      placeholder="Nama momen (opsional)..."
-                      className="w-full h-9 rounded-lg px-3 text-xs bg-black/40 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:bg-white/5 transition-all"
-                    />
+          {/* Widget 3: Moments */}
+          <div key="moments" className={`rounded-2xl border ${clipDuration > globalSettings.maxClipDuration ? 'border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'border-white/8'} bg-[#0a1628] flex flex-col overflow-hidden shadow-xl`}>
+             <div className="drag-handle h-8 bg-black/40 border-b border-white/5 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between">
+               <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Momen & Riwayat</span>
+               {!isLayoutLocked && <div className="w-4 h-4 text-slate-500"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7l5-5 5 5M7 17l5 5 5-5" /></svg></div>}
+            </div>
+            <div className="flex-1 p-5 flex flex-col gap-5 overflow-y-auto custom-scrollbar">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 hidden sm:flex rounded-lg bg-teal-500/20 items-center justify-center border border-teal-500/30">
+                    <svg className="w-4 h-4 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
                   </div>
+                  <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-widest">Pemilih Momen</h3>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="px-3 py-1  rounded-full bg-teal-500/10 border border-teal-500/20">
+                    <span className="text-[10px] sm:text-sm font-mono text-teal-400 font-bold">{toHMS(currentTime, true)}</span>
+                  </div>
+                  <div className="w-px h-6 bg-white/10" />
                   <button
-                    onClick={handleSaveMoment}
-                    disabled={isSavingMoment || duration === 0}
-                    className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold transition-colors flex items-center gap-2 shrink-0">
-                    {isSavingMoment ? (
-                      <Spinner className="w-3 h-3 text-white" />
-                    ) : (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                      </svg>
-                    )}
-                    <span>Simpan</span>
+                    onClick={() => setShowMomentsPanel(!showMomentsPanel)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${showMomentsPanel ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}>
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span className="hidden sm:inline">Momen Tersimpan ({savedMoments.length})</span>
                   </button>
                 </div>
               </div>
 
-              {/* Quick Preset Durations */}
-              <div className="flex flex-col gap-3">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Durasi Instan</span>
-                <div id="tour-preset-durations" className="grid grid-cols-2 xsm:grid-cols-4 gap-2">
-                  {[5, 10, 30, 60].map((s) => (
-                    <Tooltip key={s} content={`Tambah ${s} detik dari start`} className="w-full">
-                      <button
-                        onClick={() => setEndTime(Math.min(duration, startTime + s))}
-                        className="w-full px-2 py-3 rounded-xl bg-teal-500/5 border border-teal-500/10 hover:bg-teal-500/20 hover:border-teal-500/30 text-xs font-bold text-teal-400 transition-all">
-                        +{s}s
+              <div className="flex flex-col gap-6">
+                {/* Saved Moments Panel */}
+                {showMomentsPanel && (
+                  <div className="bg-black/30 w-full rounded-xl border border-indigo-500/20 overflow-hidden shrink-0 animate-in slide-in-from-top-2 duration-300">
+                    <div className="bg-indigo-500/10 px-4 py-3 border-b border-indigo-500/10 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                        <span className="text-sm font-semibold text-indigo-100">Daftar Momen Video Ini</span>
+                      </div>
+                      <button onClick={() => setShowMomentsPanel(false)} className="text-slate-400 hover:text-white">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                       </button>
-                    </Tooltip>
-                  ))}
+                    </div>
+
+                    <div className="p-4 max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-2">
+                      {savedMoments.length === 0 ? (
+                        <div className="text-center py-6 text-slate-500 text-sm">Belum ada momen yang disimpan untuk video ini.</div>
+                      ) : (
+                        savedMoments.map((moment) => (
+                          <div
+                            key={moment.id}
+                            onClick={() => {
+                              setStartTime(moment.startTime);
+                              setEndTime(moment.endTime);
+                              const player = playerInstance || playerRef.current;
+                              if (player) {
+                                let target: VideoPlayer = player;
+                                if (!player.seekTo && player.getInternalPlayer) {
+                                  const internal = player.getInternalPlayer();
+                                  if (internal) target = internal as VideoPlayer;
+                                }
+                                if (typeof target.seekTo === 'function') target.seekTo(moment.startTime, 'seconds');
+                                else if (target.currentTime !== undefined) target.currentTime = moment.startTime;
+                                setCurrentTime(moment.startTime);
+                              }
+                            }}
+                            className="group flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/30 cursor-pointer transition-all">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm font-semibold text-white group-hover:text-indigo-300 transition-colors">{moment.label}</span>
+                              <span className="text-xs font-mono text-slate-400">
+                                {toHMS(moment.startTime)} - {toHMS(moment.endTime)} ({toHMS(moment.endTime - moment.startTime)})
+                              </span>
+                            </div>
+                            <button onClick={(e) => handleDeleteMoment(moment.id, e)} className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-500/20 rounded-lg transition-all" title="Hapus Momen">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Seek Slider */}
+                <Tooltip content="Geser kursor ini untuk mencari posisi waktu secara cepat" position="top" className="w-full">
+                  <div className="flex flex-col gap-2 w-full">
+                    <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Geser Cepat</span>
+                      <span className="text-[10px] text-slate-500 font-mono">{toHMS(duration)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max={Number.isFinite(duration) && duration > 0 ? duration : 100}
+                      step="0.1"
+                      value={Number.isFinite(currentTime) ? currentTime : 0}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        const time = isFinite(val) ? val : 0;
+                        const player = playerInstance || playerRef.current;
+                        if (player) {
+                          let target: VideoPlayer = player;
+                          if (!player.seekTo && player.getInternalPlayer) {
+                            const internal = player.getInternalPlayer();
+                            if (internal) target = internal as VideoPlayer;
+                          }
+                          if (typeof target.seekTo === 'function') {
+                            target.seekTo(time, 'seconds');
+                          } else if (target.currentTime !== undefined) {
+                            target.currentTime = time;
+                          }
+                          setCurrentTime(time);
+                        }
+                      }}
+                      className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-500"
+                    />
+                  </div>
+                </Tooltip>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Manual Boundary Controls */}
+                  <div className="flex flex-col gap-3">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tentukan Batas</span>
+                    <div id="tour-point-controls" className="grid grid-cols-2 gap-2">
+                      <Tooltip content="Set waktu mulai pada posisi saat ini">
+                        <button
+                          onClick={() => setStartTime(currentTime)}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-teal-500/50 transition-all group">
+                          <div className="w-2 h-2 rounded-full bg-teal-500 group-hover:animate-pulse" />
+                          <span className="text-[8px] sm:text-xs font-bold text-white">Mulai Sini</span>
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Set waktu akhir pada posisi saat ini">
+                        <button
+                          onClick={() => setEndTime(currentTime)}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-emerald-500/50 transition-all group">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 group-hover:animate-pulse" />
+                          <span className="text-[8px] sm:text-xs font-bold text-white">Selesai Sini</span>
+                        </button>
+                      </Tooltip>
+                    </div>
+
+                    {/* Save Moment Inline Feature */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={momentLabel}
+                          onChange={(e) => setMomentLabel(e.target.value)}
+                          placeholder="Nama momen..."
+                          className="w-full h-9 rounded-lg px-3 text-xs bg-black/40 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:bg-white/5 transition-all"
+                        />
+                      </div>
+                      <button
+                        onClick={handleSaveMoment}
+                        disabled={isSavingMoment || duration === 0}
+                        className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold transition-colors flex items-center gap-2 shrink-0">
+                        {isSavingMoment ? <Spinner className="w-3 h-3 text-white" /> : <svg className="w-3.5 h-3.5" stroke="currentColor"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>}
+                        <span>Simpan</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Durations */}
+                  <div className="flex flex-col gap-3">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Durasi Instan</span>
+                    <div id="tour-preset-durations" className="grid grid-cols-2 xsm:grid-cols-4 gap-2">
+                      {[5, 10, 30, 60].map((s) => (
+                        <Tooltip key={s} content={`Tambah ${s} detik dari start`} className="w-full">
+                          <button
+                            onClick={() => setEndTime(Math.min(duration, startTime + s))}
+                            className="w-full px-2 py-3 rounded-xl bg-teal-500/5 border border-teal-500/10 hover:bg-teal-500/20 hover:border-teal-500/30 text-xs font-bold text-teal-400 transition-all">
+                            +{s}s
+                          </button>
+                        </Tooltip>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Stats & Warnings */}
+                <div className="p-3 rounded-xl bg-black/20 border border-white/5 flex flex-col items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-6 justify-center w-full">
+                    <TimeReadout label="Mulai" value={toHMS(startTime)} tooltip="Titik waktu dimulainya klip" />
+                    <div className="w-px h-8 bg-white/10 hidden sm:block" />
+                    <TimeReadout label="Selesai" value={toHMS(endTime)} tooltip="Titik waktu berakhirnya klip" />
+                    <div className="w-px h-8 bg-white/10 hidden sm:block" />
+                    <TimeReadout label="Durasi" value={toHMS(Math.max(0, endTime - startTime))} accent tooltip="Total panjang waktu media" />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 justify-center w-full">
+                    {clipDuration > globalSettings.maxClipDuration && (
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 animate-pulse">
+                        <svg className="w-3 h-3 text-rose-500" stroke="currentColor"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <span className="text-[10px] font-bold text-rose-500 uppercase">Limit Terlampaui</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Live Stats & Warnings */}
-            <div className="p-3 rounded-xl bg-black/20 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 justify-center md:justify-start w-full md:w-auto">
-                <TimeReadout label="Mulai" value={toHMS(startTime)} tooltip="Titik waktu dimulainya klip" />
-                <div className="w-px h-8 bg-white/10 hidden sm:block" />
-                <TimeReadout label="Selesai" value={toHMS(endTime)} tooltip="Titik waktu berakhirnya klip" />
-                <div className="w-px h-8 bg-white/10 hidden sm:block" />
-                <TimeReadout label="Durasi Klip" value={toHMS(Math.max(0, endTime - startTime))} accent tooltip="Total panjang waktu media yang akan diproses" />
+          {/* Widget 4: Controls & Export */}
+          <div key="controls" className="rounded-2xl border border-white/8 bg-[#0a1628] flex flex-col overflow-hidden shadow-xl">
+             <div className="drag-handle h-8 bg-black/40 border-b border-white/5 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between">
+               <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Kontrol & Ekspor</span>
+               {!isLayoutLocked && <div className="w-4 h-4 text-slate-500"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7l5-5 5 5M7 17l5 5 5-5" /></svg></div>}
+            </div>
+            <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
+              {jobStatus === 'error' && errorMsg && <p className="text-xs text-red-400 text-center">{errorMsg}</p>}
+
+              <div className="flex flex-col gap-4 w-full">
+                <div id="tour-mode-selection" className="flex flex-wrap items-center gap-2 p-1 bg-white/5 rounded-xl border border-white/10 w-full justify-center sm:justify-start">
+                  <Tooltip content="Ekspor sebagai klip video MP4" position="bottom" className="flex-1 sm:flex-none">
+                    <button
+                      id="tour-mode-video"
+                      onClick={() => setMode('video')}
+                      className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'video' ? 'bg-teal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
+                      Klip (MP4)
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Ambil foto HD dari frame saat ini" position="bottom" className="flex-1 sm:flex-none">
+                    <button
+                      id="tour-mode-photo"
+                      onClick={() => setMode('super_photo')}
+                      className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'super_photo' ? 'bg-teal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
+                      Foto (PNG)
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Ekspor banyak frame dalam file ZIP" position="bottom" className="flex-1 sm:flex-none">
+                    <button
+                      id="tour-mode-burst"
+                      onClick={() => setMode('burst')}
+                      className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'burst' ? 'bg-teal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
+                      Burst (ZIP)
+                    </button>
+                  </Tooltip>
+                </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <div className="relative">
+                        <input type="checkbox" checked={enableCrop} onChange={(e) => setEnableCrop(e.target.checked)} className="sr-only" />
+                        <div className={`w-10 h-5 rounded-full transition-colors ${enableCrop ? 'bg-teal-600' : 'bg-slate-700'}`} />
+                        <div className={`absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform ${enableCrop ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aktifkan Crop</span>
+                    </label>
+                    {enableCrop && (
+                      <p className="text-[9px] text-teal-500 font-medium animate-pulse">
+                        * Atur kotak hijau di atas player untuk menyesuaikan area visual
+                      </p>
+                    )}
+                  </div>
+
+                {(mode === 'burst' || showWelcome) && (
+                  <div className="flex items-center gap-3">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Interval (s)</label>
+                    <input
+                      type="number"
+                      min="0.2"
+                      step="0.2"
+                      value={Number.isNaN(burstInterval) ? '' : burstInterval}
+                      onChange={(e) => setBurstInterval(parseFloat(e.target.value) || 0.2)}
+                      className="w-20 h-8 rounded-lg px-2 text-sm bg-[#0d2137] border border-white/10 text-white outline-none focus:border-teal-500 transition-all font-mono"
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 justify-center md:justify-end w-full md:w-auto">
-                {clipDuration > globalSettings.maxClipDuration && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 animate-pulse">
-                    <svg className="w-3 h-3 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span className="text-[10px] font-bold text-rose-500 uppercase tracking-wider">Batas {Math.floor(globalSettings.maxClipDuration / 60)}m terlampaui</span>
-                  </div>
+              <div className="flex flex-col gap-3 mt-auto">
+                {((playerReady && duration > 0) || showWelcome) && (
+                  <button
+                    onClick={handlePreview}
+                    className={`flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl font-semibold text-sm transition-all border ${isPreviewing ? 'border-amber-500/40 bg-amber-500/10 text-amber-400' : 'border-white/10 bg-white/5 text-slate-300'}`}>
+                    {isPreviewing ? <span>Berhenti</span> : <span>Pratinjau Rentang</span>}
+                  </button>
                 )}
-                {clipDuration < globalSettings.minClipDuration && clipDuration > 0 && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 animate-pulse">
-                    <svg className="w-3 h-3 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Min {globalSettings.minClipDuration}d diperlukan</span>
-                  </div>
+
+                {jobStatus === 'finished' ? (
+                  <button
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 transition-colors">
+                    {isDownloading ? <Spinner /> : <span>Unduh Hasil</span>}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleCreateClip}
+                    disabled={!playerReady || duration === 0 || isProcessing || (mode === 'video' && (clipDuration < globalSettings.minClipDuration || clipDuration > globalSettings.maxClipDuration || currentClipCount >= globalSettings.maxClipsPerVideo))}
+                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm bg-teal-600 hover:bg-teal-500 disabled:opacity-40 transition-all shadow-lg shadow-teal-900/40">
+                    {isProcessing ? <Spinner /> : <span>Eksekusi {mode === 'video' ? 'Klip' : mode === 'super_photo' ? 'Foto' : 'Burst'}</span>}
+                  </button>
                 )}
-                <div className="text-[10px] text-slate-500 font-medium italic hidden md:block">{startTime === 0 && endTime === duration ? 'Pilih rentang lebih kecil' : 'Fitur bantuan aktif'}</div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="rounded-2xl border border-white/8 bg-[#0a1628] p-4 flex flex-col md:flex-row items-center gap-4">
-          {jobStatus === 'error' && errorMsg && <p className="text-xs text-red-400 max-w-xs text-center sm:text-right">{errorMsg}</p>}
-
-          <div className="flex flex-col gap-4 w-full md:flex-1">
-            <div id="tour-mode-selection" className="flex flex-wrap items-center gap-2 p-1 bg-white/5 rounded-xl border border-white/10 w-full sm:w-fit justify-center sm:justify-start">
-              <Tooltip content="Ekspor sebagai klip video MP4" position="bottom" className="flex-1 sm:flex-none">
-                <button
-                  id="tour-mode-video"
-                  onClick={() => setMode('video')}
-                  className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'video' ? 'bg-teal-600 text-white shadow-lg shadow-teal-900/40' : 'text-slate-400 hover:text-white'}`}>
-                  Klip (MP4)
-                </button>
-              </Tooltip>
-              <Tooltip content="Ambil foto HD dari frame saat ini" position="bottom" className="flex-1 sm:flex-none">
-                <button
-                  id="tour-mode-photo"
-                  onClick={() => setMode('super_photo')}
-                  className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'super_photo' ? 'bg-teal-600 text-white shadow-lg shadow-teal-900/40' : 'text-slate-400 hover:text-white'}`}>
-                  Foto (PNG)
-                </button>
-              </Tooltip>
-              <Tooltip content="Ekspor banyak frame dalam file ZIP" position="bottom" className="flex-1 sm:flex-none">
-                <button
-                  id="tour-mode-burst"
-                  onClick={() => setMode('burst')}
-                  className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${mode === 'burst' ? 'bg-teal-600 text-white shadow-lg shadow-teal-900/40' : 'text-slate-400 hover:text-white'}`}>
-                  Burst (ZIP)
-                </button>
-              </Tooltip>
-            </div>
-
-            {mode === 'super_photo' && (
-              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative">
-                    <input type="checkbox" checked={enableCrop} onChange={(e) => setEnableCrop(e.target.checked)} className="sr-only" />
-                    <div className={`w-10 h-5 rounded-full transition-colors ${enableCrop ? 'bg-teal-600' : 'bg-slate-700'}`} />
-                    <div className={`absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform ${enableCrop ? 'translate-x-5' : 'translate-x-0'}`} />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-teal-400 transition-colors">Aktifkan Crop</span>
-                </label>
-              </div>
-            )}
-
-            {(mode === 'burst' || showWelcome) && (
-              <div id="tour-burst-interval" className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Interval Frame (detik)</label>
-                <input
-                  type="number"
-                  min="0.2"
-                  step="0.2"
-                  value={Number.isNaN(burstInterval) ? '' : burstInterval}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    setBurstInterval(Number.isNaN(val) ? 0.2 : val);
-                  }}
-                  className="w-20 h-8 rounded-lg px-2 text-sm bg-[#0d2137] border border-white/10 text-white outline-none focus:border-teal-500 transition-all font-mono"
-                />
-              </div>
-            )}
-          </div>
-
-          {((playerReady && duration > 0) || showWelcome) && (
-            <Tooltip content="Lihat pratinjau rentang waktu yang dipilih" position="top" className="w-full sm:w-auto">
-              <button
-                id="tour-preview-button"
-                onClick={handlePreview}
-                className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl font-semibold text-sm shrink-0 transition-colors border ${isPreviewing ? 'border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'}`}>
-                {isPreviewing ? (
-                  <>
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <rect x="6" y="4" width="4" height="16" />
-                      <rect x="14" y="4" width="4" height="16" />
-                    </svg>
-                    <span>Berhenti</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <polygon points="5 3 19 12 5 21 5 3" />
-                    </svg>
-                    <span>Pratinjau</span>
-                  </>
-                )}
-              </button>
-            </Tooltip>
-          )}
-
-          {jobStatus === 'finished' ? (
-            <Tooltip content="Simpan hasil ke perangkat Anda" position="top">
-              <button
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm shrink-0 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-emerald-900/40">
-                {isDownloading ? (
-                  <>
-                    <Spinner />
-                    <span>Mendownload…</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    Unduh File
-                  </>
-                )}
-              </button>
-            </Tooltip>
-          ) : (
-            <Tooltip content="Mulai proses pengolahan media" position="top" className="w-full sm:w-auto">
-              <button
-                id="tour-create-button"
-                onClick={handleCreateClip}
-                disabled={
-                  !playerReady ||
-                  duration === 0 ||
-                  isProcessing ||
-                  (mode === 'video' && (clipDuration < globalSettings.minClipDuration || clipDuration > globalSettings.maxClipDuration || currentClipCount >= globalSettings.maxClipsPerVideo)) ||
-                  (mode === 'burst' && (clipDuration < globalSettings.minClipDuration || clipDuration > globalSettings.maxClipDuration))
-                }
-                className="flex items-center justify-center gap-2 w-full sm:w-auto px-7 py-3 rounded-xl font-semibold text-sm shrink-0 bg-teal-600 hover:bg-teal-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-lg shadow-teal-900/40">
-                {isProcessing ? (
-                  <>
-                    <Spinner />
-                    <span>{jobStatus === 'loading' ? 'Mengirim…' : 'Memproses…'}</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      {mode === 'video' ? (
-                        <>
-                          <polygon points="23 7 16 12 23 17 23 7" />
-                          <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                        </>
-                      ) : mode === 'super_photo' ? (
-                        <>
-                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                          <circle cx="12" cy="13" r="4" />
-                        </>
-                      ) : (
-                        <>
-                          <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-                          <line x1="7" y1="2" x2="7" y2="22" />
-                          <line x1="17" y1="2" x2="17" y2="22" />
-                          <line x1="2" y1="12" x2="22" y2="12" />
-                          <line x1="2" y1="7" x2="22" y2="7" />
-                          <line x1="2" y1="17" x2="22" y2="17" />
-                        </>
-                      )}
-                    </svg>
-                    <span>{mode === 'video' ? 'Buat Klip' : mode === 'super_photo' ? 'Ambil Foto' : 'Buat Burst'}</span>
-                  </>
-                )}
-              </button>
-            </Tooltip>
-          )}
-        </div>
+        </ResponsiveGridLayout>
 
         {isProcessing && (
           <div className="rounded-2xl border border-white/10 bg-[#0a1628]/80 backdrop-blur-xl p-8 animate-in fade-in zoom-in-95 duration-700 shadow-[0_0_50px_rgba(20,184,166,0.1)] relative overflow-hidden">
