@@ -1062,7 +1062,7 @@ export default function VideoEditorPage() {
 
       <main className="flex-1 max-w-full lg:max-w-7xl w-full mx-auto px-4 py-6 overflow-x-hidden">
         <ResponsiveGridLayout
-          className="layout"
+          className={`layout ${isLayoutLocked ? 'layout-locked' : ''}`}
           layouts={layouts}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
