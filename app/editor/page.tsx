@@ -668,6 +668,7 @@ export default function VideoEditorPage() {
           });
           if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
 
+          
           const data = await res.json();
 
           // Support both 'processing' and potential 'procesing' typo
