@@ -457,7 +457,7 @@ export default function VideoEditorPage() {
         setCurrentTime(video.currentTime);
       }
     },
-    [isPreviewing, isScrubbing]
+    [isPreviewing, isScrubbing],
   );
 
   useEffect(() => {
@@ -660,7 +660,12 @@ export default function VideoEditorPage() {
         try {
           const statusUrl = `${API_URL}/status/${jobId}`;
 
-          const res = await fetch(statusUrl);
+          const res = await fetch(statusUrl, {
+            method: 'GET',
+            headers: {
+              'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || '',
+            },
+          });
           if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
 
           const data = await res.json();
@@ -822,6 +827,9 @@ export default function VideoEditorPage() {
 
       const res = await fetch(`${API_URL}/download`, {
         method: 'POST',
+        headers: {
+          'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || '',
+        },
         body: formData,
       });
 
@@ -1036,25 +1044,30 @@ export default function VideoEditorPage() {
           <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block" />
 
           <div className="flex items-center gap-2">
-            <Tooltip content={isLayoutLocked ? "Buka kuncian untuk mengatur posisi panel" : "Kunci posisi panel"} position="bottom">
+            <Tooltip content={isLayoutLocked ? 'Buka kuncian untuk mengatur posisi panel' : 'Kunci posisi panel'} position="bottom">
               <button
                 onClick={() => setIsLayoutLocked(!isLayoutLocked)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all border ${isLayoutLocked ? 'bg-white/5 border-white/10 text-slate-400 hover:text-white' : 'bg-amber-500/20 border-amber-500/40 text-amber-400'}`}
-              >
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all border ${isLayoutLocked ? 'bg-white/5 border-white/10 text-slate-400 hover:text-white' : 'bg-amber-500/20 border-amber-500/40 text-amber-400'}`}>
                 {isLayoutLocked ? (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
                 ) : (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                  </svg>
                 )}
               </button>
             </Tooltip>
 
             <Tooltip content="Reset susunan panel" position="bottom">
-              <button
-                onClick={resetLayout}
-                className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 text-slate-400 hover:text-rose-400 hover:border-rose-500/30 transition-all"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+              <button onClick={resetLayout} className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 text-slate-400 hover:text-rose-400 hover:border-rose-500/30 transition-all">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
               </button>
             </Tooltip>
           </div>
@@ -1063,7 +1076,7 @@ export default function VideoEditorPage() {
 
       <main className="flex-1 max-w-full lg:max-w-7xl w-full mx-auto px-4 py-6 overflow-x-hidden space-y-6">
         <ClosureBanner />
-        
+
         <ResponsiveGridLayout
           className={`layout ${isLayoutLocked ? 'layout-locked' : ''}`}
           layouts={layouts}
@@ -1074,23 +1087,30 @@ export default function VideoEditorPage() {
           onLayoutChange={onLayoutChange}
           isDraggable={!isLayoutLocked}
           isResizable={!isLayoutLocked}
-          margin={[16, 16]}
-        >
+          margin={[16, 16]}>
           {/* Widget 1: Video Player */}
           <div key="player" className="bg-[#0a1628] rounded-2xl border border-white/8 overflow-hidden flex flex-col shadow-2xl">
             <div className="drag-handle h-8 bg-black/40 border-b border-white/5 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between">
-               <div className="flex items-center gap-2">
-                 <div className="flex gap-1">
-                   <div className="w-2 h-2 rounded-full bg-rose-500/50" />
-                   <div className="w-2 h-2 rounded-full bg-amber-500/50" />
-                   <div className="w-2 h-2 rounded-full bg-emerald-500/50" />
-                 </div>
-                 <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Video Player</span>
-               </div>
-               {!isLayoutLocked && <div className="w-4 h-4 text-slate-500"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7l5-5 5 5M7 17l5 5 5-5" /></svg></div>}
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-rose-500/50" />
+                  <div className="w-2 h-2 rounded-full bg-amber-500/50" />
+                  <div className="w-2 h-2 rounded-full bg-emerald-500/50" />
+                </div>
+                <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Video Player</span>
+              </div>
+              {!isLayoutLocked && (
+                <div className="w-4 h-4 text-slate-500">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M7 7l5-5 5 5M7 17l5 5 5-5" />
+                  </svg>
+                </div>
+              )}
             </div>
             <div className="flex-1 relative p-1 bg-black">
-              <div className={`relative w-full h-full rounded-xl overflow-hidden shadow-2xl shadow-black/60 transition-colors duration-300 border-2 ${isPreviewing ? 'border-amber-500/50' : 'border-white/8'}`} style={{ background: '#05200f' }}>
+              <div
+                className={`relative w-full h-full rounded-xl overflow-hidden shadow-2xl shadow-black/60 transition-colors duration-300 border-2 ${isPreviewing ? 'border-amber-500/50' : 'border-white/8'}`}
+                style={{ background: '#05200f' }}>
                 <div className="relative w-full h-full">
                   {activeUrl ? (
                     <div ref={playerContainerRef} className="absolute inset-0">
@@ -1154,7 +1174,7 @@ export default function VideoEditorPage() {
                               y: Math.max(0, (position.y / playerSize.height) * 100),
                             });
                           }}
-                          onDrag={ (e) => e.stopPropagation() }
+                          onDrag={(e) => e.stopPropagation()}
                           className="z-50 border-2 border-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.3)] bg-teal-500/10 pointer-events-auto"
                           style={{ cursor: 'move' }}>
                           {/* 3x3 Grid */}
@@ -1186,9 +1206,15 @@ export default function VideoEditorPage() {
 
           {/* Widget 2: Timeline */}
           <div key="timeline" className="bg-[#0a1628] rounded-2xl border border-white/8 overflow-hidden flex flex-col p-4 shadow-xl">
-             <div className="drag-handle absolute top-0 left-0 right-0 h-8 bg-black/20 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between z-10">
-               <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Timeline & Duration</span>
-               {!isLayoutLocked && <div className="w-4 h-4 text-slate-500"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7l5-5 5 5M7 17l5 5 5-5" /></svg></div>}
+            <div className="drag-handle absolute top-0 left-0 right-0 h-8 bg-black/20 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between z-10">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Timeline & Duration</span>
+              {!isLayoutLocked && (
+                <div className="w-4 h-4 text-slate-500">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M7 7l5-5 5 5M7 17l5 5 5-5" />
+                  </svg>
+                </div>
+              )}
             </div>
             <div className="mt-6 flex flex-col gap-3 h-full justify-center">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 px-0.5">
@@ -1282,10 +1308,18 @@ export default function VideoEditorPage() {
           </div>
 
           {/* Widget 3: Moments */}
-          <div key="moments" className={`rounded-2xl border ${clipDuration > globalSettings.maxClipDuration ? 'border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'border-white/8'} bg-[#0a1628] flex flex-col overflow-hidden shadow-xl`}>
-             <div className="drag-handle h-8 bg-black/40 border-b border-white/5 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between">
-               <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Momen & Riwayat</span>
-               {!isLayoutLocked && <div className="w-4 h-4 text-slate-500"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7l5-5 5 5M7 17l5 5 5-5" /></svg></div>}
+          <div
+            key="moments"
+            className={`rounded-2xl border ${clipDuration > globalSettings.maxClipDuration ? 'border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'border-white/8'} bg-[#0a1628] flex flex-col overflow-hidden shadow-xl`}>
+            <div className="drag-handle h-8 bg-black/40 border-b border-white/5 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Momen & Riwayat</span>
+              {!isLayoutLocked && (
+                <div className="w-4 h-4 text-slate-500">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M7 7l5-5 5 5M7 17l5 5 5-5" />
+                  </svg>
+                </div>
+              )}
             </div>
             <div className="flex-1 p-5 flex flex-col gap-5 overflow-y-auto custom-scrollbar">
               <div className="flex items-center justify-between">
@@ -1447,7 +1481,13 @@ export default function VideoEditorPage() {
                         onClick={handleSaveMoment}
                         disabled={isSavingMoment || duration === 0}
                         className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold transition-colors flex items-center gap-2 shrink-0">
-                        {isSavingMoment ? <Spinner className="w-3 h-3 text-white" /> : <svg className="w-3.5 h-3.5" stroke="currentColor"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>}
+                        {isSavingMoment ? (
+                          <Spinner className="w-3 h-3 text-white" />
+                        ) : (
+                          <svg className="w-3.5 h-3.5" stroke="currentColor">
+                            <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                          </svg>
+                        )}
                         <span>Simpan</span>
                       </button>
                     </div>
@@ -1483,7 +1523,9 @@ export default function VideoEditorPage() {
                   <div className="flex flex-wrap items-center gap-2 justify-center w-full">
                     {clipDuration > globalSettings.maxClipDuration && (
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 animate-pulse">
-                        <svg className="w-3 h-3 text-rose-500" stroke="currentColor"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <svg className="w-3 h-3 text-rose-500" stroke="currentColor">
+                          <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
                         <span className="text-[10px] font-bold text-rose-500 uppercase">Limit Terlampaui</span>
                       </div>
                     )}
@@ -1495,9 +1537,15 @@ export default function VideoEditorPage() {
 
           {/* Widget 4: Controls & Export */}
           <div key="controls" className="rounded-2xl border border-white/8 bg-[#0a1628] flex flex-col overflow-hidden shadow-xl">
-             <div className="drag-handle h-8 bg-black/40 border-b border-white/5 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between">
-               <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Kontrol & Ekspor</span>
-               {!isLayoutLocked && <div className="w-4 h-4 text-slate-500"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7l5-5 5 5M7 17l5 5 5-5" /></svg></div>}
+            <div className="drag-handle h-8 bg-black/40 border-b border-white/5 flex items-center px-4 cursor-grab active:cursor-grabbing justify-between">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Kontrol & Ekspor</span>
+              {!isLayoutLocked && (
+                <div className="w-4 h-4 text-slate-500">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M7 7l5-5 5 5M7 17l5 5 5-5" />
+                  </svg>
+                </div>
+              )}
             </div>
             <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
               {jobStatus === 'error' && errorMsg && <p className="text-xs text-red-400 text-center">{errorMsg}</p>}
@@ -1530,21 +1578,17 @@ export default function VideoEditorPage() {
                   </Tooltip>
                 </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <div className="relative">
-                        <input type="checkbox" checked={enableCrop} onChange={(e) => setEnableCrop(e.target.checked)} className="sr-only" />
-                        <div className={`w-10 h-5 rounded-full transition-colors ${enableCrop ? 'bg-teal-600' : 'bg-slate-700'}`} />
-                        <div className={`absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform ${enableCrop ? 'translate-x-5' : 'translate-x-0'}`} />
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aktifkan Crop</span>
-                    </label>
-                    {enableCrop && (
-                      <p className="text-[9px] text-teal-500 font-medium animate-pulse">
-                        * Atur kotak hijau di atas player untuk menyesuaikan area visual
-                      </p>
-                    )}
-                  </div>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <div className="relative">
+                      <input type="checkbox" checked={enableCrop} onChange={(e) => setEnableCrop(e.target.checked)} className="sr-only" />
+                      <div className={`w-10 h-5 rounded-full transition-colors ${enableCrop ? 'bg-teal-600' : 'bg-slate-700'}`} />
+                      <div className={`absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform ${enableCrop ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aktifkan Crop</span>
+                  </label>
+                  {enableCrop && <p className="text-[9px] text-teal-500 font-medium animate-pulse">* Atur kotak hijau di atas player untuk menyesuaikan area visual</p>}
+                </div>
 
                 {(mode === 'burst' || showWelcome) && (
                   <div className="flex items-center gap-3">
@@ -1580,7 +1624,12 @@ export default function VideoEditorPage() {
                 ) : (
                   <button
                     onClick={handleCreateClip}
-                    disabled={!playerReady || duration === 0 || isProcessing || (mode === 'video' && (clipDuration < globalSettings.minClipDuration || clipDuration > globalSettings.maxClipDuration || currentClipCount >= globalSettings.maxClipsPerVideo))}
+                    disabled={
+                      !playerReady ||
+                      duration === 0 ||
+                      isProcessing ||
+                      (mode === 'video' && (clipDuration < globalSettings.minClipDuration || clipDuration > globalSettings.maxClipDuration || currentClipCount >= globalSettings.maxClipsPerVideo))
+                    }
                     className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm bg-teal-600 hover:bg-teal-500 disabled:opacity-40 transition-all shadow-lg shadow-teal-900/40">
                     {isProcessing ? <Spinner /> : <span>Eksekusi {mode === 'video' ? 'Klip' : mode === 'super_photo' ? 'Foto' : 'Burst'}</span>}
                   </button>
